@@ -46,7 +46,7 @@
 
     .hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; min-height: 540px; align-items: center; gap: 38px; overflow: hidden; padding: 50px 9%; background: var(--forest); color: white; }
     .hero-copy { position: relative; z-index: 1; max-width: 700px; animation: arrive .7s ease-out both; }
-    .hero-feature-image { display: block; width: min(30vw, 330px); max-height: 460px; object-fit: contain; object-position: center; justify-self: end; box-shadow: 0 18px 45px rgba(0, 0, 0, .2); }
+    .hero-feature-image { display: block; width: min(30vw, 330px); max-height: 460px; object-fit: contain; object-position: center; justify-self: end; box-shadow: 0 18px 45px rgba(0, 0, 0, .2); animation: image-arrive .85s .12s cubic-bezier(.2, .75, .25, 1) both; }
     .eyebrow { display: flex; align-items: center; gap: 10px; color: var(--lime); font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
     .eyebrow::before { width: 26px; height: 2px; background: var(--coral); content: ""; }
     .hero h1 { max-width: 680px; margin: 18px 0 16px; font-family: var(--display); font-size: clamp(58px, 8vw, 104px); font-weight: 800; line-height: .83; text-transform: uppercase; }
@@ -71,7 +71,7 @@
     .search-wrap span { color: var(--forest); font-size: 17px; }
     .search-wrap input { width: 100%; min-width: 0; height: 35px; border: 0; background: transparent; color: var(--ink); font-size: 12px; outline: none; }
     .product-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 34px 20px; }
-    .product { min-width: 0; animation: arrive .45s ease-out both; }
+    .product { min-width: 0; }
     .product[hidden] { display: none; }
     .product-image { position: relative; overflow: hidden; background: #e1e3d9; aspect-ratio: 4 / 4.7; }
     .product-image img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .45s; }
@@ -144,6 +144,10 @@
     .chat-send { display: grid; width: 42px; height: 42px; place-items: center; border: 0; background: var(--coral); color: white; cursor: pointer; font-size: 18px; }
     .chat-send:hover { background: #d96543; }
     @keyframes chat-enter { from { opacity: 0; transform: translateY(7px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    @keyframes image-arrive { from { opacity: 0; transform: translateY(16px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .motion-enabled .scroll-reveal { opacity: 0; transform: translateY(18px); transition: opacity .55s ease, transform .55s cubic-bezier(.2, .7, .25, 1); }
+    .motion-enabled .scroll-reveal.is-visible { opacity: 1; transform: translateY(0); }
+    .motion-enabled .product.scroll-reveal { transition-delay: var(--reveal-delay, 0ms); }
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
 
     @keyframes arrive { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
@@ -192,7 +196,7 @@
       .chat-panel { max-height: calc(100dvh - 88px); }
     }
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+      *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
     }
   </style>
 </head>
@@ -247,9 +251,9 @@
           <div class="product-image"><img src="images/WhatsApp%20Image%202026-10-10%20at%2022.56.42.jpeg" alt="Model wearing the Internal Frontier Silent Wars graphic tee" loading="lazy"><span class="product-label">Graphic tee</span></div>
           <div class="product-info"><span class="product-category">Tops / 01</span><h3>Silent Wars Graphic Tee</h3><p class="product-price">Price on request</p><div class="product-actions"><label><span class="sr-only">Choose size for Silent Wars Graphic Tee</span><select class="size-select" aria-label="Size for Silent Wars Graphic Tee"><option value="">Choose size</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></label><button class="add-button" type="button">Add to enquiry</button></div></div>
         </article>
-        <article class="product" data-category="sets" data-name="Blue frontier tracksuit">
-          <div class="product-image"><img src="images/WhatsApp%20Image%202026-10-10%20at%2022.56.42%20(1).jpeg" alt="Model in a blue Internal Frontier tracksuit" loading="lazy"><span class="product-label">Tracksuit</span></div>
-          <div class="product-info"><span class="product-category">Tracksuits / 01</span><h3>Blue Frontier Tracksuit</h3><p class="product-price">Price on request</p><div class="product-actions"><label><span class="sr-only">Choose size for Blue Frontier Tracksuit</span><select class="size-select" aria-label="Size for Blue Frontier Tracksuit"><option value="">Choose size</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></label><button class="add-button" type="button">Add to enquiry</button></div></div>
+        <article class="product" data-category="sets" data-name="Black frontier tracksuit">
+          <div class="product-image"><img src="images/WhatsApp%20Image%202026-10-10%20at%2022.56.42%20(1).jpeg" alt="Model in a black Internal Frontier tracksuit" loading="lazy"><span class="product-label">Tracksuit</span></div>
+          <div class="product-info"><span class="product-category">Tracksuits / 01</span><h3>Black Frontier Tracksuit</h3><p class="product-price">Price on request</p><div class="product-actions"><label><span class="sr-only">Choose size for Black Frontier Tracksuit</span><select class="size-select" aria-label="Size for Black Frontier Tracksuit"><option value="">Choose size</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></label><button class="add-button" type="button">Add to enquiry</button></div></div>
         </article>
         <article class="product" data-category="sets" data-name="White frontier tracksuit">
           <div class="product-image"><img src="images/WhatsApp%20Image%202026-10-10%20at%2022.56.41.jpeg" alt="Two models wearing white Internal Frontier tracksuits" loading="lazy"><span class="product-label">Tracksuit</span></div>
@@ -276,7 +280,7 @@
 
   <footer class="site-footer">
     <div><div class="footer-brand">INTERNAL FRONTIER</div><p>Only trust God. Move with purpose.</p></div>
-    <div class="footer-meta"><div><a href="https://wa.me/263787434880" target="_blank" rel="noopener noreferrer">Message us on WhatsApp</a></div><div>© 2026 Internal Frontier</div></div>
+    <div class="footer-meta"><div><a href="https://wa.me/263789973632" target="_blank" rel="noopener noreferrer">Message us on WhatsApp</a></div><div>© 2026 Internal Frontier</div></div>
   </footer>
 
   <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
@@ -298,7 +302,7 @@
       <div class="chat-log" id="chat-log" role="log" aria-live="polite" aria-relevant="additions">
         <div class="chat-message chat-message-assistant">Welcome to Internal Frontier. This chat preview is being set up. For help right now, reach us on WhatsApp below.</div>
       </div>
-      <div class="chat-help">For a quick reply, message our team directly.<br><a class="chat-whatsapp" href="https://wa.me/263787434880" target="_blank" rel="noopener noreferrer">Continue on WhatsApp</a></div>
+      <div class="chat-help">For a quick reply, message our team directly.<br><a class="chat-whatsapp" href="https://wa.me/263789973632" target="_blank" rel="noopener noreferrer">Continue on WhatsApp</a></div>
       <form class="chat-form" id="chat-form">
         <label class="sr-only" for="chat-input">Write a message</label>
         <input class="chat-input" id="chat-input" name="message" type="text" maxlength="500" placeholder="Write a message..." autocomplete="off" required>
@@ -309,7 +313,7 @@
   </div>
 
   <script>
-    const whatsappNumber = "263787434880";
+    const whatsappNumber = "263789973632";
     const bagStorageKey = "internal-frontier-inquiry-bag";
     const bagDrawer = document.getElementById("bag-drawer");
     const bagItems = document.getElementById("bag-items");
@@ -321,6 +325,7 @@
     const chatLauncher = document.getElementById("open-chat");
     const chatLog = document.getElementById("chat-log");
     const chatInput = document.getElementById("chat-input");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let activeFilter = "all";
     let toastTimer;
     let inquiryBag = loadBag();
@@ -436,6 +441,29 @@
       appendChatMessage("Thanks for reaching out. This preview isn't connected to an AI assistant yet. For help now, message us on WhatsApp.", "assistant");
     }
 
+    function setupScrollReveals() {
+      if (reducedMotion.matches || !("IntersectionObserver" in window)) return;
+
+      const revealTargets = document.querySelectorAll(".manifesto, .section-top, .shop-controls, .product, .story-image, .story-copy");
+      revealTargets.forEach((target, index) => {
+        target.classList.add("scroll-reveal");
+        if (target.classList.contains("product")) {
+          target.style.setProperty("--reveal-delay", `${(index % 3) * 85}ms`);
+        }
+      });
+
+      document.body.classList.add("motion-enabled");
+      const revealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        });
+      }, { threshold: 0.12, rootMargin: "0px 0px -35px 0px" });
+
+      revealTargets.forEach((target) => revealObserver.observe(target));
+    }
+
     document.querySelectorAll(".filter-button").forEach((button) => {
       button.addEventListener("click", () => {
         activeFilter = button.dataset.filter;
@@ -492,6 +520,7 @@
 
     renderBag();
     filterProducts();
+    setupScrollReveals();
   </script>
 </body>
 </html>
