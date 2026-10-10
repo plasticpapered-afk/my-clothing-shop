@@ -1,8 +1,8 @@
 {
-  "name": "frontier-garment-backend",
+  "name": "internal-frontier-backend",
   "version": "1.0.0",
   "private": true,
-  "description": "Frontier Garment ecommerce API",
+  "description": "Internal Frontier ecommerce API",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

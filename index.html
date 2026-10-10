@@ -3,164 +3,499 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Discover stylish clothing at our online store.">
-  <title>INTERNAL FRONTIER | Only Trust God</title>
+  <meta name="description" content="Internal Frontier: expressive everyday clothing. Explore the collection and build a WhatsApp enquiry.">
+  <meta name="theme-color" content="#173c32">
+  <title>INTERNAL FRONTIER | Wear what moves you</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: Arial, sans-serif;
-      background: #f7f6f2;
-      color: #171717;
+    :root {
+      color-scheme: light;
+      --ink: #1d2925;
+      --forest: #173c32;
+      --forest-light: #285648;
+      --paper: #f5f3eb;
+      --white: #fffefa;
+      --lime: #d4e66d;
+      --coral: #ed7956;
+      --muted: #6a736e;
+      --line: #d8dcd2;
+      --display: "Barlow Condensed", Impact, sans-serif;
+      --body: "DM Sans", sans-serif;
     }
 
-    header {
-      background: #111;
-      color: white;
-      padding: 22px 7%;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--body); }
+    button, input, select { font: inherit; }
+    button, a, select { -webkit-tap-highlight-color: transparent; }
+    a { color: inherit; }
+    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--coral); outline-offset: 3px; }
+
+    .announcement { padding: 9px 20px; background: var(--lime); color: var(--ink); text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
+    .site-header { position: sticky; z-index: 10; top: 0; display: flex; min-height: 76px; align-items: center; justify-content: space-between; gap: 24px; padding: 0 6.5%; background: var(--white); border-bottom: 1px solid var(--line); }
+    .wordmark { color: var(--forest); font-family: var(--display); font-size: 30px; font-weight: 800; line-height: .88; text-decoration: none; letter-spacing: .4px; }
+    .wordmark span { display: block; color: var(--coral); font-family: var(--body); font-size: 8px; font-weight: 700; letter-spacing: 2.2px; margin-top: 6px; }
+    .nav-links { display: flex; align-items: center; gap: 32px; }
+    .nav-links a { font-size: 12px; font-weight: 700; text-decoration: none; text-transform: uppercase; letter-spacing: .8px; }
+    .nav-links a:hover { color: var(--forest-light); }
+    .bag-button { min-height: 42px; padding: 0 16px; border: 1px solid var(--forest); background: var(--forest); color: white; cursor: pointer; font-size: 12px; font-weight: 700; }
+    .bag-button:hover, .primary-button:hover { background: var(--forest-light); }
+
+    .hero { position: relative; display: flex; min-height: 540px; align-items: center; overflow: hidden; padding: 70px 9%; background: var(--forest) url("https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=2000&q=85") center 42% / cover; color: white; }
+    .hero::before { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(15, 40, 33, .92) 0%, rgba(15, 40, 33, .65) 48%, rgba(15, 40, 33, .08) 100%); content: ""; }
+    .hero-copy { position: relative; z-index: 1; max-width: 700px; animation: arrive .7s ease-out both; }
+    .eyebrow { display: flex; align-items: center; gap: 10px; color: var(--lime); font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+    .eyebrow::before { width: 26px; height: 2px; background: var(--coral); content: ""; }
+    .hero h1 { max-width: 680px; margin: 18px 0 16px; font-family: var(--display); font-size: clamp(58px, 8vw, 104px); font-weight: 800; line-height: .83; text-transform: uppercase; }
+    .hero p { max-width: 410px; margin: 0; color: rgba(255, 255, 255, .84); font-size: 15px; line-height: 1.7; }
+    .primary-button { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; margin-top: 27px; padding: 0 21px; background: var(--lime); color: var(--ink); font-size: 12px; font-weight: 700; text-decoration: none; text-transform: uppercase; letter-spacing: .8px; transition: background .2s, transform .2s; }
+    .primary-button:hover { transform: translateY(-2px); background: white; }
+    .hero .primary-button { background: var(--lime); }
+
+    .manifesto { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; padding: 60px 9%; background: var(--forest); color: white; }
+    .manifesto h2 { max-width: 470px; margin: 0; font-family: var(--display); font-size: 48px; line-height: .95; text-transform: uppercase; }
+    .manifesto p { max-width: 470px; margin: 0; color: #d7e0da; font-size: 14px; line-height: 1.8; }
+
+    .shop-section { padding: 76px 7% 88px; }
+    .section-top { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
+    .section-top h2 { margin: 5px 0 0; font-family: var(--display); font-size: 50px; line-height: .9; text-transform: uppercase; }
+    .section-top p { margin: 10px 0 0; color: var(--muted); font-size: 13px; }
+    .shop-controls { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 25px; padding: 13px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+    .filters { display: flex; flex-wrap: wrap; gap: 5px; }
+    .filter-button { min-height: 34px; padding: 0 13px; border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+    .filter-button[aria-pressed="true"] { background: var(--forest); color: white; }
+    .search-wrap { display: flex; width: min(240px, 100%); align-items: center; gap: 8px; border-bottom: 1px solid #89928c; }
+    .search-wrap span { color: var(--forest); font-size: 17px; }
+    .search-wrap input { width: 100%; min-width: 0; height: 35px; border: 0; background: transparent; color: var(--ink); font-size: 12px; outline: none; }
+    .product-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 34px 20px; }
+    .product { min-width: 0; animation: arrive .45s ease-out both; }
+    .product[hidden] { display: none; }
+    .product-image { position: relative; overflow: hidden; background: #e1e3d9; aspect-ratio: 4 / 4.7; }
+    .product-image img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .45s; }
+    .product:hover .product-image img { transform: scale(1.035); }
+    .product-label { position: absolute; top: 12px; left: 12px; padding: 7px 9px; background: var(--lime); color: var(--ink); font-size: 9px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; }
+    .product-info { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 14px 0 0; }
+    .product-category { grid-column: 1 / -1; color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
+    .product h3 { margin: 4px 0 0; font-size: 15px; font-weight: 700; }
+    .product-price { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
+    .product-actions { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(95px, .72fr) 1fr; gap: 8px; margin-top: 10px; }
+    .size-select { min-width: 0; height: 42px; padding: 0 10px; border: 1px solid var(--line); background: var(--white); color: var(--ink); font-size: 11px; }
+    .add-button { min-height: 42px; padding: 0 12px; border: 1px solid var(--forest); background: transparent; color: var(--forest); cursor: pointer; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
+    .add-button:hover { background: var(--forest); color: white; }
+    .empty-results { grid-column: 1 / -1; padding: 50px 10px; color: var(--muted); text-align: center; }
+
+    .story { display: grid; grid-template-columns: .9fr 1.1fr; min-height: 370px; background: #e7e9dc; }
+    .story-image { min-height: 300px; background: #425e4f url("https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=1200&q=80") center / cover; }
+    .story-copy { align-self: center; max-width: 570px; padding: 54px 12%; }
+    .story-copy h2 { margin: 12px 0 14px; font-family: var(--display); font-size: 49px; line-height: .9; text-transform: uppercase; }
+    .story-copy p { margin: 0; color: #4d5c54; font-size: 13px; line-height: 1.8; }
+
+    .site-footer { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: end; padding: 35px 7%; background: #142b25; color: white; }
+    .footer-brand { font-family: var(--display); font-size: 27px; font-weight: 700; }
+    .site-footer p { margin: 5px 0 0; color: #c9d4cc; font-size: 11px; }
+    .footer-meta { color: #c9d4cc; font-size: 10px; line-height: 1.8; text-align: right; }
+    .footer-meta a { color: var(--lime); }
+
+    .drawer-backdrop { position: fixed; z-index: 19; inset: 0; background: rgba(17, 29, 24, .5); opacity: 0; transition: opacity .2s; }
+    .drawer-backdrop[hidden] { display: none; }
+    .bag-drawer { position: fixed; z-index: 20; top: 0; right: 0; display: flex; width: min(430px, 100%); height: 100dvh; flex-direction: column; padding: 25px; background: var(--white); box-shadow: -12px 0 35px rgba(16, 33, 26, .15); transform: translateX(102%); transition: transform .25s ease; }
+    .bag-drawer.is-open { transform: translateX(0); }
+    .drawer-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+    .drawer-header h2 { margin: 0; font-family: var(--display); font-size: 34px; text-transform: uppercase; }
+    .icon-button { width: 40px; height: 40px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; font-size: 22px; }
+    .bag-items { flex: 1; overflow: auto; }
+    .bag-empty { padding: 32px 0; color: var(--muted); font-size: 13px; line-height: 1.7; }
+    .bag-item { display: grid; grid-template-columns: 64px 1fr auto; gap: 12px; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--line); }
+    .bag-item img { width: 64px; height: 76px; object-fit: cover; background: var(--paper); }
+    .bag-item h3 { margin: 0 0 5px; font-size: 12px; }
+    .bag-item p { margin: 0; color: var(--muted); font-size: 10px; }
+    .remove-item { border: 0; background: transparent; color: #8b4935; cursor: pointer; font-size: 10px; text-decoration: underline; }
+    .drawer-footer { padding-top: 16px; border-top: 1px solid var(--line); }
+    .drawer-footer p { margin: 0 0 12px; color: var(--muted); font-size: 11px; line-height: 1.6; }
+    .whatsapp-button { display: flex; width: 100%; min-height: 48px; align-items: center; justify-content: center; border: 0; background: var(--forest); color: white; cursor: pointer; font-size: 11px; font-weight: 700; text-decoration: none; text-transform: uppercase; letter-spacing: .6px; }
+    .whatsapp-button:disabled { background: #aab2ab; cursor: not-allowed; }
+    .toast { position: fixed; z-index: 30; right: 22px; bottom: 22px; max-width: calc(100% - 44px); padding: 13px 18px; background: var(--forest); color: white; font-size: 12px; opacity: 0; pointer-events: none; transform: translateY(10px); transition: opacity .2s, transform .2s; }
+    .toast.is-visible { opacity: 1; transform: translateY(0); }
+    .chat-widget { position: fixed; z-index: 18; right: 22px; bottom: 22px; display: grid; justify-items: end; gap: 12px; }
+    .chat-launcher { display: inline-flex; min-height: 54px; align-items: center; gap: 11px; padding: 0 19px; border: 0; border-radius: 3px; background: var(--coral); box-shadow: 0 8px 24px rgba(21, 42, 34, .2); color: white; cursor: pointer; font-size: 12px; font-weight: 700; }
+    .chat-launcher:hover { background: #d96543; }
+    .chat-icon { position: relative; width: 19px; height: 16px; border: 2px solid currentColor; border-radius: 5px; }
+    .chat-icon::after { position: absolute; bottom: -5px; left: 3px; width: 6px; height: 6px; border-bottom: 2px solid currentColor; transform: skewY(-38deg); content: ""; }
+    .chat-panel { display: flex; width: min(360px, calc(100vw - 32px)); max-height: min(540px, calc(100dvh - 112px)); flex-direction: column; overflow: hidden; border: 1px solid var(--line); border-radius: 5px; background: var(--white); box-shadow: 0 18px 50px rgba(18, 40, 31, .24); transform-origin: bottom right; animation: chat-enter .16s ease-out both; }
+    .chat-panel[hidden] { display: none; }
+    .chat-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 17px 18px; background: var(--forest); color: white; }
+    .chat-brand { display: flex; align-items: center; gap: 11px; }
+    .chat-mark { display: grid; width: 36px; height: 36px; place-items: center; background: var(--lime); color: var(--forest); font-family: var(--display); font-size: 15px; font-weight: 800; }
+    .chat-brand strong { display: block; font-family: var(--display); font-size: 20px; line-height: 1; text-transform: uppercase; }
+    .chat-status { display: flex; align-items: center; gap: 6px; margin-top: 5px; color: #d7e0da; font-size: 9px; }
+    .chat-status::before { width: 6px; height: 6px; border-radius: 50%; background: var(--lime); content: ""; }
+    .chat-close { width: 34px; height: 34px; border: 1px solid rgba(255, 255, 255, .35); background: transparent; color: white; cursor: pointer; font-size: 20px; }
+    .chat-log { display: flex; min-height: 155px; flex: 1; flex-direction: column; gap: 12px; overflow-y: auto; padding: 18px; background: #f8f8f3; }
+    .chat-message { max-width: 88%; padding: 11px 12px; border-radius: 3px; font-size: 11px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .chat-message-assistant { align-self: flex-start; border: 1px solid var(--line); background: white; color: var(--ink); }
+    .chat-message-user { align-self: flex-end; background: var(--forest); color: white; }
+    .chat-help { padding: 13px 18px 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
+    .chat-whatsapp { display: inline-block; margin-top: 5px; color: var(--forest); font-weight: 700; text-underline-offset: 2px; }
+    .chat-form { display: grid; grid-template-columns: 1fr 42px; gap: 8px; padding: 13px 18px 17px; }
+    .chat-input { min-width: 0; height: 42px; padding: 0 11px; border: 1px solid var(--line); background: white; color: var(--ink); font-size: 11px; }
+    .chat-send { display: grid; width: 42px; height: 42px; place-items: center; border: 0; background: var(--coral); color: white; cursor: pointer; font-size: 18px; }
+    .chat-send:hover { background: #d96543; }
+    @keyframes chat-enter { from { opacity: 0; transform: translateY(7px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
+
+    @keyframes arrive { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 760px) {
+      .site-header { min-height: 68px; padding: 0 5%; }
+      .nav-links { gap: 15px; }
+      .nav-links a { font-size: 10px; }
+      .wordmark { font-size: 26px; }
+      .hero { min-height: 500px; padding: 58px 7%; background-position: 58% center; }
+      .hero::before { background: linear-gradient(90deg, rgba(15, 40, 33, .88), rgba(15, 40, 33, .4)); }
+      .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 14px; }
+      .shop-section { padding: 60px 5% 68px; }
+      .manifesto { padding: 46px 7%; }
     }
-
-    .logo { font-size: 22px; font-weight: 900; letter-spacing: 2px; }
-    header a { color: white; text-decoration: none; }
-
-    .hero {
-      min-height: 390px;
-      background: #dedbd4;
-      padding: 70px 7%;
-      display: flex;
-      align-items: center;
+    @media (max-width: 520px) {
+      .announcement { font-size: 9px; }
+      .site-header { flex-wrap: wrap; gap: 0; padding: 13px 5%; }
+      .nav-links { order: 3; width: 100%; justify-content: space-between; padding-top: 13px; }
+      .bag-button { min-height: 38px; padding: 0 11px; }
+      .hero { min-height: 480px; padding: 46px 6%; }
+      .hero h1 { font-size: clamp(58px, 17vw, 82px); }
+      .hero p { max-width: 330px; font-size: 13px; }
+      .manifesto { grid-template-columns: 1fr; gap: 15px; padding: 39px 6%; }
+      .manifesto h2 { font-size: 40px; }
+      .section-top { display: block; }
+      .section-top h2 { font-size: 44px; }
+      .shop-controls { align-items: stretch; flex-direction: column-reverse; }
+      .search-wrap { width: 100%; }
+      .filters { gap: 2px; }
+      .filter-button { padding: 0 9px; font-size: 10px; }
+      .product-grid { gap: 25px 11px; }
+      .product-image { aspect-ratio: 3 / 4; }
+      .product h3 { font-size: 13px; }
+      .product-actions { grid-template-columns: 1fr; }
+      .size-select, .add-button { min-height: 39px; }
+      .story { grid-template-columns: 1fr; }
+      .story-image { min-height: 260px; }
+      .story-copy { padding: 38px 7%; }
+      .story-copy h2 { font-size: 43px; }
+      .site-footer { grid-template-columns: 1fr; }
+      .footer-meta { text-align: left; }
+      .chat-widget { right: 14px; bottom: 14px; }
+      .chat-launcher { min-height: 50px; padding: 0 15px; }
+      .chat-panel { max-height: calc(100dvh - 88px); }
     }
-
-    .hero h1 {
-      font-size: clamp(42px, 8vw, 76px);
-      line-height: 1;
-      max-width: 650px;
-      margin: 18px 0;
-    }
-
-    .hero p { font-size: 17px; line-height: 1.7; max-width: 430px; }
-    .tag { text-transform: uppercase; letter-spacing: 3px; font-size: 12px; }
-
-    .shop-button {
-      display: inline-block;
-      background: #111;
-      color: white;
-      padding: 15px 25px;
-      margin-top: 25px;
-      text-decoration: none;
-      font-weight: bold;
-    }
-
-    .products { padding: 55px 7%; }
-    .products h2 { font-size: 30px; margin-bottom: 10px; }
-    .intro { color: #666; margin-bottom: 28px; }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 22px;
-    }
-
-    .product { background: white; padding-bottom: 20px; }
-    .product img {
-      width: 100%;
-      height: 260px;
-      object-fit: cover;
-      display: block;
-      background: #e7e4df;
-    }
-
-    .product h3 { margin: 16px 15px 8px; }
-    .product p { margin: 0 15px; color: #555; }
-    .product button {
-      margin: 15px;
-      padding: 11px 16px;
-      background: #111;
-      color: white;
-      border: 0;
-      cursor: pointer;
-    }
-
-    .about { background: #e8e4dc; padding: 45px 7%; line-height: 1.8; }
-    footer { background: #111; color: white; padding: 25px 7%; line-height: 1.8; }
-
-    @media (max-width: 500px) {
-      .hero { padding: 50px 7%; }
-      .product img { height: 230px; }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <a class="logo" href="#">FRONTIER GARMENT</a>
-    <a href="#shop">EXPLORE COLLECTION ↓</a>
+  <div class="announcement">INTERNAL FRONTIER / ONLY TRUST GOD</div>
+  <header class="site-header">
+    <a class="wordmark" href="#top" aria-label="Internal Frontier home">INTERNAL<br>FRONTIER<span>ONLY TRUST GOD</span></a>
+    <nav class="nav-links" aria-label="Main navigation">
+      <a href="#shop">Shop all</a>
+      <a href="#story">Our story</a>
+    </nav>
+    <button class="bag-button" id="open-bag" type="button" aria-haspopup="dialog">Inquiry bag <span id="bag-count">0</span></button>
   </header>
 
-  <main>
-    <section class="hero">
-      <div>
-        <div class="tag">Style starts here</div>
-        <h1>WEAR YOUR IDENTITY.</h1>
-        <p>Discover your next favourite look. Everyday essentials, standout pieces and a style that's uniquely yours.</p>
-        <a class="shop-button" href="#shop">EXPLORE THE SHOP</a>
+  <main id="top">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <div class="eyebrow">Built from the inside out</div>
+        <h1 id="hero-title">Internal<br>Frontier</h1>
+        <p>Clothing for the road you make yourself. Everyday pieces, considered details, and room to move your own way.</p>
+        <a class="primary-button" href="#shop">Explore the collection</a>
       </div>
     </section>
 
-    <section class="products" id="shop">
-      <h2>THE COLLECTION</h2>
-      <p class="intro">A first look at our upcoming collection.</p>
-      <div class="grid">
-        <article class="product">
-          <img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=700&q=80" alt="Classic T-shirt">
-          <h3>Essential T-Shirt</h3>
-          <p>Price coming soon</p>
-         <a href="https://wa.me/263787434880?text=Hi%20Frontier%20Garment%2C%20I%27m%20interested%20in%20the%20Essential%20T-Shirt."
-   target="_blank"
-   rel="noopener noreferrer"
-   class="shop-button"
-   style="margin:15px; padding:11px 16px;">
-  Enquire on WhatsApp
-</a>
+    <section class="manifesto" aria-label="Our point of view">
+      <h2>Only trust God.<br>Move with purpose.</h2>
+      <p>Internal Frontier is a reminder to stay grounded while you find your own direction. Made for everyday movement, personal expression, and the journeys still ahead.</p>
+    </section>
+
+    <section class="shop-section" id="shop">
+      <div class="section-top">
+        <div>
+          <div class="eyebrow" style="color: var(--forest);">The current line</div>
+          <h2>Find your frontier</h2>
+          <p>Choose a piece and size to add it to your enquiry.</p>
+        </div>
+        <p id="result-count" aria-live="polite">6 pieces</p>
+      </div>
+      <div class="shop-controls">
+        <div class="filters" role="group" aria-label="Filter products">
+          <button class="filter-button" type="button" data-filter="all" aria-pressed="true">All pieces</button>
+          <button class="filter-button" type="button" data-filter="tops" aria-pressed="false">Tops</button>
+          <button class="filter-button" type="button" data-filter="layers" aria-pressed="false">Layers</button>
+          <button class="filter-button" type="button" data-filter="accessories" aria-pressed="false">Accessories</button>
+        </div>
+        <label class="search-wrap"><span aria-hidden="true">⌕</span><span class="sr-only">Search the collection</span><input id="product-search" type="search" placeholder="Search the collection"></label>
+      </div>
+
+      <div class="product-grid" id="product-grid">
+        <article class="product" data-category="tops" data-name="Everyday heavyweight tee">
+          <div class="product-image"><img src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=850&q=80" alt="White heavyweight cotton T-shirt" loading="lazy"><span class="product-label">Core piece</span></div>
+          <div class="product-info"><span class="product-category">Tops / 01</span><h3>Everyday Heavyweight Tee</h3><p class="product-price">Price on request</p><div class="product-actions"><label><span class="sr-only">Choose size for Everyday Heavyweight Tee</span><select class="size-select" aria-label="Size for Everyday Heavyweight Tee"><option value="">Choose size</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></label><button class="add-button" type="button">Add to enquiry</button></div></div>
         </article>
-        <article class="product">
-          <img src="https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?auto=format&fit=crop&w=700&q=80" alt="Fashion clothing collection">
-          <h3>Streetwear Collection</h3>
-          <p>Price coming soon</p>
-         <a href="https://wa.me/263787434880?text=Hi%20Frontier%20Garment%2C%20I%27m%20interested%20in%20the%20Streetwear%20Collection."
-   target="_blank" rel="noopener noreferrer"
-   class="shop-button" style="margin:15px;padding:11px 16px;">
-  Enquire on WhatsApp
-</a>
+        <article class="product" data-category="tops" data-name="Frontier graphic tee">
+          <div class="product-image"><img src="https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=850&q=80" alt="Casual graphic T-shirt styled with denim" loading="lazy"><span class="product-label">New line</span></div>
+          <div class="product-info"><span class="product-category">Tops / 02</span><h3>Frontier Graphic Tee</h3><p class="product-price">Price on request</p><div class="product-actions"><label><span class="sr-only">Choose size for Frontier Graphic Tee</span><select class="size-select" aria-label="Size for Frontier Graphic Tee"><option value="">Choose size</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></label><button class="add-button" type="button">Add to enquiry</button></div></div>
         </article>
-        <article class="product">
-          <img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=700&q=80" alt="Stylish jacket">
-          <h3>Signature Jacket</h3>
-          <p>Price coming soon</p>
-         <a href="https://wa.me/263787434880?text=Hi%20Frontier%20Garment%2C%20I%27m%20interested%20in%20the%20Signature%20Jacket."
-   target="_blank" rel="noopener noreferrer"
-   class="shop-button" style="margin:15px;padding:11px 16px;">
-  Enquire on WhatsApp
-</a>
+        <article class="product" data-category="layers" data-name="Fieldwork overshirt">
+          <div class="product-image"><img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?auto=format&fit=crop&w=850&q=80" alt="Structured neutral overshirt on a hanger" loading="lazy"><span class="product-label">Layer up</span></div>
+          <div class="product-info"><span class="product-category">Layers / 01</span><h3>Fieldwork Overshirt</h3><p class="product-price">Price on request</p><div class="product-actions"><label><span class="sr-only">Choose size for Fieldwork Overshirt</span><select class="size-select" aria-label="Size for Fieldwork Overshirt"><option value="">Choose size</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></label><button class="add-button" type="button">Add to enquiry</button></div></div>
         </article>
+        <article class="product" data-category="layers" data-name="The movement jacket">
+          <div class="product-image"><img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=850&q=80" alt="Dark lightweight jacket with zip front" loading="lazy"><span class="product-label">Outerwear</span></div>
+          <div class="product-info"><span class="product-category">Layers / 02</span><h3>The Movement Jacket</h3><p class="product-price">Price on request</p><div class="product-actions"><label><span class="sr-only">Choose size for The Movement Jacket</span><select class="size-select" aria-label="Size for The Movement Jacket"><option value="">Choose size</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></label><button class="add-button" type="button">Add to enquiry</button></div></div>
+        </article>
+        <article class="product" data-category="accessories" data-name="Daily carry cap">
+          <div class="product-image"><img src="https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=850&q=80" alt="Minimal dark cap with curved brim" loading="lazy"><span class="product-label">Daily carry</span></div>
+          <div class="product-info"><span class="product-category">Accessories / 01</span><h3>Daily Carry Cap</h3><p class="product-price">Price on request</p><div class="product-actions"><label><span class="sr-only">Choose size for Daily Carry Cap</span><select class="size-select" aria-label="Size for Daily Carry Cap"><option value="">Choose size</option><option>One size</option></select></label><button class="add-button" type="button">Add to enquiry</button></div></div>
+        </article>
+        <article class="product" data-category="accessories" data-name="Frontier everyday tote">
+          <div class="product-image"><img src="https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=850&q=80" alt="Everyday canvas carry bag" loading="lazy"><span class="product-label">On the move</span></div>
+          <div class="product-info"><span class="product-category">Accessories / 02</span><h3>Frontier Everyday Tote</h3><p class="product-price">Price on request</p><div class="product-actions"><label><span class="sr-only">Choose size for Frontier Everyday Tote</span><select class="size-select" aria-label="Size for Frontier Everyday Tote"><option value="">Choose size</option><option>One size</option></select></label><button class="add-button" type="button">Add to enquiry</button></div></div>
+        </article>
+        <p class="empty-results" id="empty-results" hidden>No pieces match that search. Try another name or category.</p>
       </div>
     </section>
 
-    <section class="about">
-      <h2>MORE THAN CLOTHING.</h2>
-      <p>We believe what you wear tells your story. We're building a collection for people who want to express themselves with confidence.</p>
+    <section class="story" id="story">
+      <div class="story-image" role="img" aria-label="Streetwear styled for an everyday city walk"></div>
+      <div class="story-copy">
+        <div class="eyebrow" style="color: var(--forest);">The Internal Frontier point of view</div>
+        <h2>Wear your own direction.</h2>
+        <p>We believe what you wear can be a quiet kind of confidence. Internal Frontier brings together dependable essentials and distinctive details, made to feel like you.</p>
+        <a class="primary-button" href="#shop">Shop the line</a>
+      </div>
     </section>
   </main>
 
-  <footer>
-    <strong>FRONTIER GARMENT</strong>
-    <p>Wear your identity. Own your style.</p>
-    <p>Contact details coming soon.</p>
-    <p>© 2026 My Clothing Shop</p>
+  <footer class="site-footer">
+    <div><div class="footer-brand">INTERNAL FRONTIER</div><p>Only trust God. Move with purpose.</p></div>
+    <div class="footer-meta"><div><a href="https://wa.me/263787434880" target="_blank" rel="noopener noreferrer">Message us on WhatsApp</a></div><div>© 2026 Internal Frontier</div></div>
   </footer>
+
+  <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+  <aside class="bag-drawer" id="bag-drawer" role="dialog" aria-modal="true" aria-labelledby="bag-title" aria-hidden="true" inert>
+    <div class="drawer-header"><h2 id="bag-title">Your enquiry</h2><button class="icon-button" id="close-bag" type="button" aria-label="Close inquiry bag">×</button></div>
+    <div class="bag-items" id="bag-items" aria-live="polite"></div>
+    <div class="drawer-footer"><p>Prices and availability are confirmed directly with Internal Frontier.</p><button class="whatsapp-button" id="send-enquiry" type="button" disabled>Continue on WhatsApp</button></div>
+  </aside>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="chat-widget">
+    <section class="chat-panel" id="chat-panel" role="dialog" aria-labelledby="chat-title" aria-hidden="true" hidden inert>
+      <div class="chat-header">
+        <div class="chat-brand">
+          <div class="chat-mark" aria-hidden="true">IF</div>
+          <div><strong id="chat-title">Internal Frontier</strong><span class="chat-status">AI assistant not connected</span></div>
+        </div>
+        <button class="chat-close" id="close-chat" type="button" aria-label="Close chat">×</button>
+      </div>
+      <div class="chat-log" id="chat-log" role="log" aria-live="polite" aria-relevant="additions">
+        <div class="chat-message chat-message-assistant">Welcome to Internal Frontier. This chat preview is being set up. For help right now, reach us on WhatsApp below.</div>
+      </div>
+      <div class="chat-help">For a quick reply, message our team directly.<br><a class="chat-whatsapp" href="https://wa.me/263787434880" target="_blank" rel="noopener noreferrer">Continue on WhatsApp</a></div>
+      <form class="chat-form" id="chat-form">
+        <label class="sr-only" for="chat-input">Write a message</label>
+        <input class="chat-input" id="chat-input" name="message" type="text" maxlength="500" placeholder="Write a message..." autocomplete="off" required>
+        <button class="chat-send" type="submit" aria-label="Send message">↑</button>
+      </form>
+    </section>
+    <button class="chat-launcher" id="open-chat" type="button" aria-haspopup="dialog" aria-controls="chat-panel" aria-expanded="false"><span class="chat-icon" aria-hidden="true"></span><span>Chat with us</span></button>
+  </div>
+
+  <script>
+    const whatsappNumber = "263787434880";
+    const bagStorageKey = "internal-frontier-inquiry-bag";
+    const bagDrawer = document.getElementById("bag-drawer");
+    const bagItems = document.getElementById("bag-items");
+    const bagCount = document.getElementById("bag-count");
+    const sendEnquiry = document.getElementById("send-enquiry");
+    const drawerBackdrop = document.getElementById("drawer-backdrop");
+    const toast = document.getElementById("toast");
+    const chatPanel = document.getElementById("chat-panel");
+    const chatLauncher = document.getElementById("open-chat");
+    const chatLog = document.getElementById("chat-log");
+    const chatInput = document.getElementById("chat-input");
+    let activeFilter = "all";
+    let toastTimer;
+    let inquiryBag = loadBag();
+
+    function loadBag() {
+      try {
+        const savedBag = JSON.parse(localStorage.getItem(bagStorageKey) || "[]");
+        return Array.isArray(savedBag) ? savedBag.filter((item) => item && typeof item.name === "string" && typeof item.size === "string") : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveBag() {
+      try {
+        localStorage.setItem(bagStorageKey, JSON.stringify(inquiryBag));
+      } catch {
+        showToast("Your bag is available for this visit only.");
+      }
+      renderBag();
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("is-visible");
+      window.clearTimeout(toastTimer);
+      toastTimer = window.setTimeout(() => toast.classList.remove("is-visible"), 2400);
+    }
+
+    function renderBag() {
+      bagCount.textContent = String(inquiryBag.length);
+      sendEnquiry.disabled = inquiryBag.length === 0;
+      bagItems.replaceChildren();
+
+      if (!inquiryBag.length) {
+        const emptyMessage = document.createElement("p");
+        emptyMessage.className = "bag-empty";
+        emptyMessage.textContent = "Your enquiry bag is empty. Add a piece from the collection to get started.";
+        bagItems.append(emptyMessage);
+        return;
+      }
+
+      inquiryBag.forEach((item, index) => {
+        const row = document.createElement("div");
+        row.className = "bag-item";
+        const image = document.createElement("img");
+        image.src = item.image;
+        image.alt = "";
+        const details = document.createElement("div");
+        const name = document.createElement("h3");
+        name.textContent = item.name;
+        const size = document.createElement("p");
+        size.textContent = `Size: ${item.size}`;
+        details.append(name, size);
+        const remove = document.createElement("button");
+        remove.className = "remove-item";
+        remove.type = "button";
+        remove.textContent = "Remove";
+        remove.setAttribute("aria-label", `Remove ${item.name}, size ${item.size}`);
+        remove.addEventListener("click", () => {
+          inquiryBag.splice(index, 1);
+          saveBag();
+        });
+        row.append(image, details, remove);
+        bagItems.append(row);
+      });
+    }
+
+    function setDrawerOpen(isOpen) {
+      bagDrawer.classList.toggle("is-open", isOpen);
+      bagDrawer.setAttribute("aria-hidden", String(!isOpen));
+      bagDrawer.toggleAttribute("inert", !isOpen);
+      drawerBackdrop.hidden = !isOpen;
+      document.body.style.overflow = isOpen ? "hidden" : "";
+      if (isOpen) document.getElementById("close-bag").focus();
+      else document.getElementById("open-bag").focus();
+    }
+
+    function filterProducts() {
+      const query = document.getElementById("product-search").value.trim().toLowerCase();
+      const products = [...document.querySelectorAll(".product")];
+      let visibleCount = 0;
+
+      products.forEach((product) => {
+        const matchesCategory = activeFilter === "all" || product.dataset.category === activeFilter;
+        const matchesSearch = product.dataset.name.includes(query);
+        product.hidden = !matchesCategory || !matchesSearch;
+        if (!product.hidden) visibleCount += 1;
+      });
+
+      document.getElementById("empty-results").hidden = visibleCount !== 0;
+      document.getElementById("result-count").textContent = `${visibleCount} ${visibleCount === 1 ? "piece" : "pieces"}`;
+    }
+
+    function setChatOpen(isOpen) {
+      chatPanel.hidden = !isOpen;
+      chatPanel.setAttribute("aria-hidden", String(!isOpen));
+      chatPanel.toggleAttribute("inert", !isOpen);
+      chatLauncher.setAttribute("aria-expanded", String(isOpen));
+      if (isOpen) chatInput.focus();
+      else chatLauncher.focus();
+    }
+
+    function appendChatMessage(message, sender) {
+      const messageElement = document.createElement("div");
+      messageElement.className = `chat-message chat-message-${sender}`;
+      messageElement.textContent = message;
+      chatLog.append(messageElement);
+      chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    function respondToChatMessage(message) {
+      appendChatMessage("Thanks for reaching out. This preview isn't connected to an AI assistant yet. For help now, message us on WhatsApp.", "assistant");
+    }
+
+    document.querySelectorAll(".filter-button").forEach((button) => {
+      button.addEventListener("click", () => {
+        activeFilter = button.dataset.filter;
+        document.querySelectorAll(".filter-button").forEach((filterButton) => {
+          filterButton.setAttribute("aria-pressed", String(filterButton === button));
+        });
+        filterProducts();
+      });
+    });
+
+    document.getElementById("product-search").addEventListener("input", filterProducts);
+    document.querySelectorAll(".add-button").forEach((button) => {
+      button.addEventListener("click", () => {
+        const product = button.closest(".product");
+        const sizeSelect = product.querySelector(".size-select");
+        if (!sizeSelect.value) {
+          sizeSelect.focus();
+          showToast("Choose a size before adding this piece.");
+          return;
+        }
+        inquiryBag.push({
+          name: product.dataset.name.replace(/\b\w/g, (letter) => letter.toUpperCase()),
+          size: sizeSelect.value,
+          image: product.querySelector("img").src
+        });
+        saveBag();
+        showToast("Added to your enquiry bag.");
+      });
+    });
+
+    document.getElementById("open-bag").addEventListener("click", () => setDrawerOpen(true));
+    document.getElementById("close-bag").addEventListener("click", () => setDrawerOpen(false));
+    drawerBackdrop.addEventListener("click", () => setDrawerOpen(false));
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && bagDrawer.classList.contains("is-open")) setDrawerOpen(false);
+      if (event.key === "Escape" && !chatPanel.hidden) setChatOpen(false);
+    });
+    chatLauncher.addEventListener("click", () => setChatOpen(chatPanel.hidden));
+    document.getElementById("close-chat").addEventListener("click", () => setChatOpen(false));
+    document.getElementById("chat-form").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const message = chatInput.value.trim();
+      if (!message) return;
+      appendChatMessage(message, "user");
+      chatInput.value = "";
+      respondToChatMessage(message);
+    });
+    sendEnquiry.addEventListener("click", () => {
+      if (!inquiryBag.length) return;
+      const productLines = inquiryBag.map((item) => `- ${item.name} (size ${item.size})`).join("\n");
+      const message = `Hi Internal Frontier, I'd like to ask about these pieces:\n${productLines}\nPlease share pricing and availability. Thank you!`;
+      window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+    });
+
+    renderBag();
+    filterProducts();
+  </script>
 </body>
 </html>

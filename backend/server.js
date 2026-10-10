@@ -20,7 +20,7 @@ app.get("/health", async (req, res) => {
     await pool.query("SELECT 1");
     res.json({
       status: "ok",
-      service: "Frontier Garment API",
+      service: "Internal Frontier API",
       database: "connected"
     });
   } catch (error) {
@@ -34,11 +34,11 @@ app.get("/health", async (req, res) => {
 
 app.get("/", (req, res) => {
   res.json({
-    message: "Frontier Garment API",
+    message: "Internal Frontier API",
     health: "/health"
   });
 });
 
 app.listen(port, "0.0.0.0", () => {
-  console.log(`Frontier Garment API listening on ${port}`);
+  console.log(`Internal Frontier API listening on ${port}`);
 });
