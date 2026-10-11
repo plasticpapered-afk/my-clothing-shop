@@ -10,6 +10,6 @@ From the `backend` directory, install dependencies with `npm install` and start 
 
 ## Live chat agent
 
-The chat widget posts a message to `/api/chat`, which responds with a product-aware reply. The logic is defined in `backend/chat-agent.js` and can be expanded with a real LLM later.
+The chat widget posts a message to `/api/chat`. If `OPENAI_API_KEY` is present in the environment, the server uses the OpenAI chat completions API. If it is missing, it falls back to the local product-aware reply logic in `backend/chat-agent.js`.
 
-Set `DATABASE_URL` for the PostgreSQL health check if you want the database status to run correctly.
+Set `OPENAI_API_KEY` in your local terminal or environment before starting the server, and set `DATABASE_URL` for the PostgreSQL health check if you want the database status to run correctly.
