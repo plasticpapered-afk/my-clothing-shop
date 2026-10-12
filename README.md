@@ -10,6 +10,17 @@ From the `backend` directory, install dependencies with `npm install` and start 
 
 ## Live chat agent
 
-The chat widget posts a message to `/api/chat`. If `OPENAI_API_KEY` is present in the environment, the server uses the OpenAI chat completions API. If it is missing, it falls back to the local product-aware reply logic in `backend/chat-agent.js`.
+The chat widget posts to `/api/chat`. The backend sends the message to Vercel AI Gateway; the key stays on the server and is never sent to the browser.
 
-Set `OPENAI_API_KEY` in your local terminal or environment before starting the server, and set `DATABASE_URL` for the PostgreSQL health check if you want the database status to run correctly.
+Set `AI_GATEWAY_API_KEY` to your Vercel AI Gateway key before starting the backend. In PowerShell, from the `backend` directory, run:
+
+```powershell
+$env:AI_GATEWAY_API_KEY = "your-new-vercel-key"
+npm start
+```
+
+That setting lasts only for the current terminal session. For a Vercel deployment, add `AI_GATEWAY_API_KEY` under the project's Environment Variables, then redeploy. You can optionally set `AI_GATEWAY_MODEL`; the default is `openai/gpt-4o-mini`.
+
+Do not put the key in `index.html` or commit it to source control. The key pasted into chat should be revoked and replaced in Vercel. The older OpenAI key previously embedded in the page should also be revoked.
+
+Set `DATABASE_URL` for the PostgreSQL health check if you want the database status to run correctly.

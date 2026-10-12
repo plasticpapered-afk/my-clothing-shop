@@ -7,48 +7,6 @@ const { generateChatReply } = require("./chat-agent");
 const app = express();
 const port = process.env.PORT || 3000;
 const storefrontRoot = path.join(__dirname, "..");
-const openAiKey = process.env.OPENAI_API_KEY;
-
-async function getAiChatReply(message) {
-  if (!openAiKey) {
-    return generateChatReply(message);
-  }
-
-  try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${openAiKey}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: "You are the live chat assistant for Internal Frontier, an upscale streetwear brand. Reply in a warm, concise, helpful way. Promote the collection, answer sizing questions, and direct customers to WhatsApp for pricing and stock details."
-          },
-          {
-            role: "user",
-            content: message
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 220
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`OpenAI request failed with status ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.choices?.[0]?.message?.content?.trim() || generateChatReply(message);
-  } catch (error) {
-    console.error("OpenAI chat request failed:", error.message);
-    return generateChatReply(message);
-  }
-}
 
 app.use(helmet());
 app.use(express.json({ limit: "20kb" }));
@@ -89,19 +47,24 @@ app.get("/health", async (req, res) => {
 app.post("/api/chat", async (req, res) => {
   const message = typeof req.body?.message === "string" ? req.body.message.trim() : "";
 
-  if (!message) {
+  if (!message || message.length > 500) {
     return res.status(400).json({
       ok: false,
-      error: "A message is required."
+      error: "A message between 1 and 500 characters is required."
     });
   }
 
-  const reply = await getAiChatReply(message);
-
-  return res.json({
-    ok: true,
-    reply
-  });
+  try {
+    const reply = await generateChatReply(message);
+    return res.json({ ok: true, reply });
+  } catch (error) {
+    console.error("Chat request failed");
+    const status = process.env.AI_GATEWAY_API_KEY ? 502 : 503;
+    return res.status(status).json({
+      ok: false,
+      error: status === 503 ? "The AI assistant is not configured." : "The AI assistant is temporarily unavailable."
+    });
+  }
 });
 
 app.use(express.static(storefrontRoot, { index: false }));
