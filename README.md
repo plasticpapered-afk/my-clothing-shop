@@ -24,3 +24,13 @@ That setting lasts only for the current terminal session. For a Vercel deploymen
 Do not put the key in `index.html` or commit it to source control. The key pasted into chat should be revoked and replaced in Vercel. The older OpenAI key previously embedded in the page should also be revoked.
 
 Set `DATABASE_URL` for the PostgreSQL health check if you want the database status to run correctly.
+
+## Deploying on Vercel
+
+The repo deploys to Vercel as a serverless function plus static files:
+
+1. The Express app is exported from `backend/server.js` and mounted in `api/index.js`.
+2. `vercel.json` rewrites all traffic to that function, so `/`, `/api`, `/api/chat`, and `/health` work as before.
+3. Set `AI_GATEWAY_API_KEY` (and optionally `AI_GATEWAY_MODEL`, `DATABASE_URL`, `DATABASE_SSL`) in the Vercel project environment variables.
+
+In the Vercel project settings, the Framework Preset should be *Other* with the root directory left as the repo root. Local development still works with `npm start` from `backend`.

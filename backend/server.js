@@ -73,7 +73,7 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(storefrontRoot, "index.html"));
 });
 
-app.get("/api", (req, res) => {
+app.get(["/api", "/api/"], (req, res) => {
   res.json({
     message: "Internal Frontier API",
     health: "/health",
@@ -81,6 +81,10 @@ app.get("/api", (req, res) => {
   });
 });
 
-app.listen(port, "0.0.0.0", () => {
-  console.log(`Internal Frontier API listening on ${port}`);
-});
+if (require.main === module) {
+  app.listen(port, "0.0.0.0", () => {
+    console.log(`Internal Frontier API listening on ${port}`);
+  });
+}
+
+module.exports = app;
