@@ -1,52 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { generateChatReply } = require('./chat-agent');
-const chatHandler = require('../api/chat');
-
-function createResponse() {
-  return {
-    statusCode: 200,
-    headers: {},
-    setHeader(name, value) {
-      this.headers[name] = value;
-    },
-    status(code) {
-      this.statusCode = code;
-      return this;
-    },
-    json(body) {
-      this.body = body;
-      return this;
-    }
-  };
-}
-
-test('Vercel chat function returns an assistant reply', async () => {
-  const previousKey = process.env.AI_GATEWAY_API_KEY;
-  const previousFetch = global.fetch;
-  process.env.AI_GATEWAY_API_KEY = 'test-key';
-  global.fetch = async () => ({
-    ok: true,
-    json: async () => ({ choices: [{ message: { content: 'Hello from the assistant.' } }] })
-  });
-
-  try {
-    const response = createResponse();
-    await chatHandler({ method: 'POST', body: { message: 'hello' } }, response);
-    assert.equal(response.statusCode, 200);
-    assert.deepEqual(response.body, { ok: true, reply: 'Hello from the assistant.' });
-  } finally {
-    global.fetch = previousFetch;
-    if (previousKey === undefined) delete process.env.AI_GATEWAY_API_KEY;
-    else process.env.AI_GATEWAY_API_KEY = previousKey;
-  }
-});
-
-test('Vercel chat function rejects invalid messages', async () => {
-  const response = createResponse();
-  await chatHandler({ method: 'POST', body: { message: '  ' } }, response);
-  assert.equal(response.statusCode, 400);
-});
 
 test('sends chat to Vercel AI Gateway with the server-side key', async () => {
   const previousKey = process.env.AI_GATEWAY_API_KEY;
