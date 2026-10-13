@@ -6,7 +6,6 @@ const { generateChatReply } = require("./chat-agent");
 
 const app = express();
 const port = process.env.PORT || 3000;
-const storefrontRoot = __dirname;
 
 app.use(helmet());
 app.use(express.json({ limit: "20kb" }));
@@ -67,10 +66,10 @@ app.post("/api/chat", async (req, res) => {
   }
 });
 
-app.use("/images", express.static(path.join(storefrontRoot, "images")));
+app.use(express.static(path.join(__dirname, "public")));
 
 app.get("/", (req, res) => {
-  res.sendFile(path.join(storefrontRoot, "index.html"));
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 app.get(["/api", "/api/"], (req, res) => {
