@@ -360,7 +360,7 @@
     function renderBag() {
       bagCount.textContent = String(inquiryBag.length);
       sendEnquiry.disabled = inquiryBag.length === 0;
-      bagItems.replaceChildren();
+      bagItems.textContent = "";
 
       if (!inquiryBag.length) {
         const emptyMessage = document.createElement("p");
@@ -452,8 +452,8 @@
         });
 
         const data = await response.json();
-        if (!response.ok || !data?.ok) {
-          throw new Error(data?.error || "Chat request failed");
+        if (!response.ok || !data || data.ok !== true) {
+          throw new Error((data && data.error) || "Chat request failed");
         }
 
         if (status) status.textContent = "AI assistant online";
