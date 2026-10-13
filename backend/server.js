@@ -81,7 +81,7 @@ app.get(["/api", "/api/"], (req, res) => {
   });
 });
 
-if (require.main === module) {
+if (require.main === module && !process.env.VERCEL) {
   app.listen(port, "0.0.0.0", () => {
     console.log(`Internal Frontier API listening on ${port}`);
   });
