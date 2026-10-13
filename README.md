@@ -2,7 +2,7 @@
 
 Internal Frontier clothing storefront and live chat enquiry flow.
 
-The storefront is served from the backend on `http://localhost:3000`, where customers can filter and search the collection, select sizes, save pieces to an enquiry bag, and send their selection to the shop on WhatsApp.
+The storefront (`backend/index.html`) is served from the backend on `http://localhost:3000`, where customers can filter and search the collection, select sizes, save pieces to an enquiry bag, and send their selection to the shop on WhatsApp.
 
 ## Backend
 
@@ -27,10 +27,7 @@ Set `DATABASE_URL` for the PostgreSQL health check if you want the database stat
 
 ## Deploying on Vercel
 
-The repo deploys to Vercel as a serverless function plus static files:
-
-1. The Express app is exported from `backend/server.js` and mounted in `api/index.js`.
-2. `vercel.json` rewrites all traffic to that function, so `/`, `/api`, `/api/chat`, and `/health` work as before.
-3. Set `AI_GATEWAY_API_KEY` (and optionally `AI_GATEWAY_MODEL`, `DATABASE_URL`, `DATABASE_SSL`) in the Vercel project environment variables.
-
-In the Vercel project settings, the Framework Preset should be *Other* with the root directory left as the repo root. Local development still works with `npm start` from `backend`.
+1. Import the repo on Vercel with *Root Directory* set to `backend` and *Application Preset* set to `Express`.
+2. The shop page (`index.html`) and `images` folder live inside `backend`, so Vercel includes them.
+3. Add these Environment Variables before deploying: `AI_GATEWAY_API_KEY` (needed for the chat assistant). Optional: `AI_GATEWAY_MODEL`, `DATABASE_URL`, `DATABASE_SSL`.
+4. Deploy. Local use is unchanged: run `npm install` then `npm start` inside `backend`.
