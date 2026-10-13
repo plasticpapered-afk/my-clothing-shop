@@ -326,6 +326,8 @@
     const chatLog = document.getElementById("chat-log");
     const chatInput = document.getElementById("chat-input");
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    // Chat open/close wired first so no later error can break the chat button
     let activeFilter = "all";
     let toastTimer;
     let inquiryBag = loadBag();
@@ -485,6 +487,7 @@
       revealTargets.forEach((target) => revealObserver.observe(target));
     }
 
+    try {
     document.querySelectorAll(".filter-button").forEach((button) => {
       button.addEventListener("click", () => {
         activeFilter = button.dataset.filter;
@@ -542,6 +545,9 @@
     renderBag();
     filterProducts();
     setupScrollReveals();
+    } catch (setupError) {
+      console.error("Shop setup error:", setupError);
+    }
   </script>
 </body>
 </html>
