@@ -37,3 +37,28 @@ Set `DATABASE_URL` for the PostgreSQL health check if you want the database stat
 ## Free AI option (Gemini)
 
 The chat assistant can use a free Google Gemini key. In Vercel, add the Environment Variable `GEMINI_API_KEY` (get the key from aistudio.google.com) and redeploy. Optionally set `GEMINI_MODEL` (default `gemini-2.5-flash`). If `GEMINI_API_KEY` is set it is used first; otherwise the app falls back to `AI_GATEWAY_API_KEY`.
+
+## Back office (admin dashboard)
+
+The back office lives at `/admin` on the same site. Staff sign in with an email and password. The first visit shows a one-time setup screen that creates the administrator account.
+
+What it covers:
+
+* Dashboard: live pieces, stock on hand, open orders, paid revenue, low stock.
+* Products: add pieces with photos, prices, sizes and colours; stock is tracked per size and colour. Removing a product hides it but keeps its order history.
+* Orders: unique references (e.g. IF-2610-0001), server-calculated totals, stock reserved when an order is taken and returned if it is cancelled. Statuses: new, confirmed, dispatched, delivered, cancelled.
+* Payments: a payment is recorded with method (EcoCash, cash, bank transfer), amount and reference. An order is only marked paid when the recorded payments cover its total, never by editing a status.
+* Customers: contact details and history, matched by phone number.
+* Staff: admin and staff roles. Admins manage staff accounts and see the audit trail.
+
+### Back office environment variables
+
+The back office needs a PostgreSQL database:
+
+* `DATABASE_URL`: connection string from your database provider (Neon, Supabase, Vercel Postgres all work).
+* `DATABASE_SSL`: set to `true` if the provider requires SSL (Neon does).
+* `SESSION_SECRET`: a long random string that keeps staff sign-in sessions secure. If unset the app falls back to a development default, so always set it in production.
+
+The storefront keeps working without these, using the pieces built into the page. Create the database, add the variables in Vercel under Project Settings > Environment Variables, redeploy, then open `/admin` to create the first account.
+
+On Vercel, remember the project Root Directory is `backend` and the preset is Express.

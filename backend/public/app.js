@@ -98,7 +98,7 @@
 
       products.forEach((product) => {
         const matchesCategory = activeFilter === "all" || product.dataset.category === activeFilter;
-        const matchesSearch = product.dataset.name.includes(query);
+        const matchesSearch = product.dataset.name.toLowerCase().includes(query);
         product.hidden = !matchesCategory || !matchesSearch;
         if (!product.hidden) visibleCount += 1;
       });
@@ -174,6 +174,111 @@
       revealTargets.forEach((target) => revealObserver.observe(target));
     }
 
+    const CATEGORY_LABELS = { tops: "Tops", sets: "Tracksuits", jerseys: "Jerseys", accessories: "Accessories", other: "Other" };
+
+    function wireAddButtons() {
+      document.querySelectorAll(".add-button").forEach((button) => {
+        button.addEventListener("click", () => {
+          const product = button.closest(".product");
+          const sizeSelect = product.querySelector(".size-select");
+          if (!sizeSelect.value) {
+            sizeSelect.focus();
+            showToast("Choose a size before adding this piece.");
+            return;
+          }
+          inquiryBag.push({
+            name: product.dataset.name.replace(/\b\w/g, (letter) => letter.toUpperCase()),
+            size: sizeSelect.value,
+            image: product.querySelector("img").src
+          });
+          saveBag();
+          showToast("Added to your enquiry bag.");
+        });
+      });
+    }
+
+    function buildProductCard(product, indexInCategory) {
+      const article = document.createElement("article");
+      article.className = "product";
+      article.dataset.category = product.category;
+      article.dataset.name = product.name.toLowerCase();
+
+      const image = document.createElement("div");
+      image.className = "product-image";
+      const img = document.createElement("img");
+      img.src = product.image_url || "";
+      img.alt = product.name;
+      img.loading = "lazy";
+      const label = document.createElement("span");
+      label.className = "product-label";
+      label.textContent = product.label || CATEGORY_LABELS[product.category] || "Shop";
+      image.append(img, label);
+
+      const info = document.createElement("div");
+      info.className = "product-info";
+      const category = document.createElement("span");
+      category.className = "product-category";
+      category.textContent = `${CATEGORY_LABELS[product.category] || "Shop"} / ${String(indexInCategory + 1).padStart(2, "0")}`;
+      const name = document.createElement("h3");
+      name.textContent = product.name;
+      const price = document.createElement("p");
+      price.className = "product-price";
+      price.textContent = product.price === null || product.price === undefined ? "Price on request" : `$${Number(product.price).toFixed(2)}`;
+
+      const actions = document.createElement("div");
+      actions.className = "product-actions";
+      const sizeWrap = document.createElement("label");
+      const sizeLabel = document.createElement("span");
+      sizeLabel.className = "sr-only";
+      sizeLabel.textContent = `Choose size for ${product.name}`;
+      const sizeSelect = document.createElement("select");
+      sizeSelect.className = "size-select";
+      sizeSelect.setAttribute("aria-label", `Size for ${product.name}`);
+      const choose = document.createElement("option");
+      choose.value = "";
+      choose.textContent = "Choose size";
+      sizeSelect.append(choose);
+      const sizes = [...new Set(product.variants.map((variant) => variant.size || "One size"))];
+      sizes.forEach((size) => {
+        const option = document.createElement("option");
+        option.textContent = size;
+        sizeSelect.append(option);
+      });
+      sizeWrap.append(sizeLabel, sizeSelect);
+      const addButton = document.createElement("button");
+      addButton.className = "add-button";
+      addButton.type = "button";
+      addButton.textContent = "Add to enquiry";
+      actions.append(sizeWrap, addButton);
+
+      info.append(category, name, price, actions);
+      article.append(image, info);
+      return article;
+    }
+
+    // Loads the live catalogue from the back office. If it is unavailable the
+    // shop keeps the pieces built into the page, so it never looks empty.
+    async function loadLiveProducts() {
+      try {
+        const response = await fetch("/api/products");
+        if (!response.ok) return;
+        const data = await response.json();
+        if (!data || data.ok !== true || !Array.isArray(data.products) || data.products.length === 0) return;
+        const grid = document.getElementById("product-grid");
+        grid.querySelectorAll(".product").forEach((card) => card.remove());
+        const counters = {};
+        data.products.forEach((product) => {
+          counters[product.category] = (counters[product.category] || 0) + 1;
+          grid.append(buildProductCard(product, counters[product.category] - 1));
+        });
+        wireAddButtons();
+        setupScrollReveals();
+        filterProducts();
+      } catch (error) {
+        // The built-in products remain on screen.
+      }
+    }
+
     try {
     document.querySelectorAll(".filter-button").forEach((button) => {
       button.addEventListener("click", () => {
@@ -186,25 +291,6 @@
     });
 
     document.getElementById("product-search").addEventListener("input", filterProducts);
-    document.querySelectorAll(".add-button").forEach((button) => {
-      button.addEventListener("click", () => {
-        const product = button.closest(".product");
-        const sizeSelect = product.querySelector(".size-select");
-        if (!sizeSelect.value) {
-          sizeSelect.focus();
-          showToast("Choose a size before adding this piece.");
-          return;
-        }
-        inquiryBag.push({
-          name: product.dataset.name.replace(/\b\w/g, (letter) => letter.toUpperCase()),
-          size: sizeSelect.value,
-          image: product.querySelector("img").src
-        });
-        saveBag();
-        showToast("Added to your enquiry bag.");
-      });
-    });
-
     document.getElementById("open-bag").addEventListener("click", () => setDrawerOpen(true));
     document.getElementById("close-bag").addEventListener("click", () => setDrawerOpen(false));
     drawerBackdrop.addEventListener("click", () => setDrawerOpen(false));
@@ -235,8 +321,10 @@
     });
 
     renderBag();
+    wireAddButtons();
     filterProducts();
     setupScrollReveals();
+    loadLiveProducts();
     } catch (setupError) {
       console.error("Shop setup error:", setupError);
     }

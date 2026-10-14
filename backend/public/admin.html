@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#173c32">
+  <title>Back office | Internal Frontier</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <section class="auth-wrap" id="auth-screen">
+    <div class="auth-card">
+      <div class="auth-brand">INTERNAL FRONTIER</div>
+      <p class="auth-sub">Back office</p>
+      <div id="auth-body"></div>
+    </div>
+  </section>
+
+  <div id="app-shell" hidden>
+    <header class="admin-header">
+      <div>
+        <span class="admin-brand">INTERNAL FRONTIER</span>
+        <span class="admin-tag">Back office</span>
+      </div>
+      <div class="admin-header-right">
+        <span id="whoami" class="whoami"></span>
+        <button type="button" class="btn ghost" id="logout-btn">Sign out</button>
+      </div>
+    </header>
+
+    <nav class="admin-nav" id="admin-nav">
+      <button type="button" class="nav-item is-active" data-view="dashboard">Dashboard</button>
+      <button type="button" class="nav-item" data-view="products">Products</button>
+      <button type="button" class="nav-item" data-view="orders">Orders</button>
+      <button type="button" class="nav-item" data-view="customers">Customers</button>
+      <button type="button" class="nav-item" data-view="staff">Staff</button>
+    </nav>
+
+    <main class="admin-main">
+      <section class="view" id="view-dashboard"></section>
+      <section class="view" id="view-products" hidden></section>
+      <section class="view" id="view-orders" hidden></section>
+      <section class="view" id="view-customers" hidden></section>
+      <section class="view" id="view-staff" hidden></section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="admin.js"></script>
+</body>
+</html>

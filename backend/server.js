@@ -1,17 +1,29 @@
 const express = require("express");
 const helmet = require("helmet");
 const path = require("path");
-const { Pool } = require("pg");
+const db = require("./db");
+const adminRouter = require("./admin");
 const { generateChatReply } = require("./chat-agent");
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(helmet());
+// Same security defaults as before, plus permission to load product images
+// hosted over HTTPS (for back office images that live outside this app).
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        "img-src": ["'self'", "data:", "https:"]
+      }
+    }
+  })
+);
 app.use(express.json({ limit: "20kb" }));
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS,PATCH,PUT,DELETE");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") {
     return res.sendStatus(204);
@@ -19,16 +31,9 @@ app.use((req, res, next) => {
   next();
 });
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_SSL === "true"
-    ? { rejectUnauthorized: true }
-    : false
-});
-
 app.get("/health", async (req, res) => {
   try {
-    await pool.query("SELECT 1");
+    await db.query("SELECT 1");
     res.json({
       status: "ok",
       service: "Internal Frontier API",
@@ -40,6 +45,54 @@ app.get("/health", async (req, res) => {
       status: "error",
       message: "Database unavailable"
     });
+  }
+});
+
+// Public product catalogue used by the storefront. The storefront keeps its
+// built-in products as a fallback when this endpoint is unavailable.
+app.get("/api/products", async (req, res) => {
+  if (!db.isConfigured()) {
+    return res.status(503).json({ ok: false, error: "Catalogue is not available." });
+  }
+  try {
+    await db.ensureSchema();
+    const products = await db.query(
+      "SELECT id, name, description, category, label, image_url, base_price, position FROM products WHERE active ORDER BY position, id"
+    );
+    const variants = await db.query(
+      `SELECT v.id, v.product_id, v.size, v.colour, v.price, v.active
+       FROM product_variants v
+       JOIN products p ON p.id = v.product_id
+       WHERE p.active AND v.active
+       ORDER BY v.id`
+    );
+    const byProduct = new Map();
+    for (const variant of variants.rows) {
+      if (!byProduct.has(variant.product_id)) byProduct.set(variant.product_id, []);
+      byProduct.get(variant.product_id).push(variant);
+    }
+    res.json({
+      ok: true,
+      products: products.rows.map((product) => ({
+        id: product.id,
+        name: product.name,
+        description: product.description,
+        category: product.category,
+        label: product.label,
+        image_url: product.image_url,
+        position: product.position,
+        price: product.base_price === null ? null : Number(product.base_price),
+        variants: (byProduct.get(product.id) || []).map((variant) => ({
+          id: variant.id,
+          size: variant.size,
+          colour: variant.colour,
+          price: variant.price === null ? null : Number(variant.price)
+        }))
+      }))
+    });
+  } catch (error) {
+    console.error("Catalogue request failed:", error.message);
+    res.status(503).json({ ok: false, error: "Catalogue is not available." });
   }
 });
 
@@ -72,11 +125,16 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
+// Back office API and page.
+app.use(adminRouter);
+
 app.get(["/api", "/api/"], (req, res) => {
   res.json({
     message: "Internal Frontier API",
     health: "/health",
-    chat: "/api/chat"
+    chat: "/api/chat",
+    products: "/api/products",
+    admin: "/admin"
   });
 });
 
