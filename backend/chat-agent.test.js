@@ -4,7 +4,9 @@ const { generateChatReply } = require('./chat-agent');
 
 test('sends chat to Vercel AI Gateway with the server-side key', async () => {
   const previousKey = process.env.AI_GATEWAY_API_KEY;
+  const previousGeminiKey = process.env.GEMINI_API_KEY;
   const previousFetch = global.fetch;
+  delete process.env.GEMINI_API_KEY;
   process.env.AI_GATEWAY_API_KEY = 'test-key';
   let request;
   global.fetch = async (url, options) => {
@@ -25,6 +27,8 @@ test('sends chat to Vercel AI Gateway with the server-side key', async () => {
     global.fetch = previousFetch;
     if (previousKey === undefined) delete process.env.AI_GATEWAY_API_KEY;
     else process.env.AI_GATEWAY_API_KEY = previousKey;
+    if (previousGeminiKey === undefined) delete process.env.GEMINI_API_KEY;
+    else process.env.GEMINI_API_KEY = previousGeminiKey;
   }
 });
 
