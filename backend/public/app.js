@@ -4,6 +4,8 @@
     const bagItems = document.getElementById("bag-items");
     const bagCount = document.getElementById("bag-count");
     const sendEnquiry = document.getElementById("send-enquiry");
+    const siteCheckout = document.getElementById("site-checkout");
+    const bagTotalLine = document.getElementById("bag-total-line");
     const drawerBackdrop = document.getElementById("drawer-backdrop");
     const toast = document.getElementById("toast");
     const chatPanel = document.getElementById("chat-panel");
@@ -20,7 +22,9 @@
     function loadBag() {
       try {
         const savedBag = JSON.parse(localStorage.getItem(bagStorageKey) || "[]");
-        return Array.isArray(savedBag) ? savedBag.filter((item) => item && typeof item.name === "string" && typeof item.size === "string") : [];
+        return Array.isArray(savedBag)
+          ? savedBag.filter((item) => item && typeof item.name === "string" && typeof item.size === "string")
+          : [];
       } catch {
         return [];
       }
@@ -42,9 +46,22 @@
       toastTimer = window.setTimeout(() => toast.classList.remove("is-visible"), 2400);
     }
 
+    function bagCanCheckout() {
+      return inquiryBag.length > 0 && inquiryBag.every((item) => item.variantId && item.price !== null && item.price !== undefined);
+    }
+
     function renderBag() {
       bagCount.textContent = String(inquiryBag.length);
       sendEnquiry.disabled = inquiryBag.length === 0;
+      if (siteCheckout) siteCheckout.disabled = !bagCanCheckout();
+      if (bagTotalLine) {
+        if (bagCanCheckout()) {
+          bagTotalLine.textContent = `Total: $${inquiryBag.reduce((sum, item) => sum + Number(item.price), 0).toFixed(2)}`;
+          bagTotalLine.hidden = false;
+        } else {
+          bagTotalLine.hidden = true;
+        }
+      }
       bagItems.textContent = "";
 
       if (!inquiryBag.length) {
@@ -66,7 +83,9 @@
         name.textContent = item.name;
         const size = document.createElement("p");
         size.textContent = `Size: ${item.size}`;
-        details.append(name, size);
+        const price = document.createElement("p");
+        price.textContent = item.price === null || item.price === undefined ? "Price on request" : `$${Number(item.price).toFixed(2)}`;
+        details.append(name, size, price);
         const remove = document.createElement("button");
         remove.className = "remove-item";
         remove.type = "button";
@@ -186,10 +205,17 @@
             showToast("Choose a size before adding this piece.");
             return;
           }
+          const selectedOption = sizeSelect.selectedOptions[0];
+          const variantId = selectedOption && selectedOption.dataset.variantId ? Number(selectedOption.dataset.variantId) : null;
+          const selectedPrice = selectedOption && selectedOption.dataset.price !== undefined && selectedOption.dataset.price !== "" && selectedOption.dataset.price !== "null"
+            ? Number(selectedOption.dataset.price)
+            : null;
           inquiryBag.push({
             name: product.dataset.name.replace(/\b\w/g, (letter) => letter.toUpperCase()),
             size: sizeSelect.value,
-            image: product.querySelector("img").src
+            image: product.querySelector("img").src,
+            variantId: Number.isFinite(variantId) ? variantId : null,
+            price: selectedPrice !== null && Number.isFinite(selectedPrice) ? selectedPrice : null
           });
           saveBag();
           showToast("Added to your enquiry bag.");
@@ -238,12 +264,22 @@
       choose.value = "";
       choose.textContent = "Choose size";
       sizeSelect.append(choose);
-      const sizes = [...new Set(product.variants.map((variant) => variant.size || "One size"))];
-      sizes.forEach((size) => {
+      product.variants.forEach((variant) => {
         const option = document.createElement("option");
-        option.textContent = size;
+        option.value = String(variant.id);
+        option.textContent = [variant.size, variant.colour].filter(Boolean).join(" / ") || "One size";
+        const price = variant.price !== null && variant.price !== undefined
+          ? Number(variant.price)
+          : (product.price !== null && product.price !== undefined ? Number(product.price) : null);
+        option.dataset.variantId = String(variant.id);
+        option.dataset.price = price === null ? "" : String(price);
         sizeSelect.append(option);
       });
+      if (product.variants.length === 0) {
+        const option = document.createElement("option");
+        option.textContent = "One size";
+        sizeSelect.append(option);
+      }
       sizeWrap.append(sizeLabel, sizeSelect);
       const addButton = document.createElement("button");
       addButton.className = "add-button";
@@ -279,6 +315,117 @@
       }
     }
 
+    // ---------- Website checkout ----------
+    // Customers place the order on the site, choose how they want to pay
+    // (EcoCash, cash on delivery or bank transfer) and get a reference.
+    // Payment is confirmed by the shop on WhatsApp, and staff record the money
+    // in the back office.
+
+    const checkoutOverlay = document.createElement("div");
+    checkoutOverlay.className = "checkout-overlay";
+    checkoutOverlay.id = "checkout-overlay";
+    checkoutOverlay.hidden = true;
+    document.body.append(checkoutOverlay);
+
+    function closeCheckout() {
+      checkoutOverlay.hidden = true;
+      checkoutOverlay.textContent = "";
+    }
+
+    function openCheckout() {
+      if (!bagCanCheckout()) {
+        showToast("Some pieces need prices set by the shop. Please enquire on WhatsApp.");
+        return;
+      }
+      renderCheckoutForm();
+      checkoutOverlay.hidden = false;
+    }
+
+    function renderCheckoutForm() {
+      const total = inquiryBag.reduce((sum, item) => sum + Number(item.price), 0);
+      checkoutOverlay.textContent = "";
+      const card = document.createElement("div");
+      card.className = "checkout-card";
+      card.innerHTML = `
+        <button class="checkout-close" id="checkout-close" type="button" aria-label="Close checkout">×</button>
+        <h2>Checkout</h2>
+        <p class="checkout-sub">Place your order now. We confirm payment and delivery on WhatsApp.</p>
+        <p class="checkout-summary">${inquiryBag.length} ${inquiryBag.length === 1 ? "piece" : "pieces"} · Total <strong>$${total.toFixed(2)}</strong></p>
+        <div class="checkout-error" id="checkout-error"></div>
+        <form id="checkout-form">
+          <label class="checkout-field"><span>Your name</span><input name="name" required maxlength="80" autocomplete="name"></label>
+          <label class="checkout-field"><span>Phone (WhatsApp)</span><input name="phone" required maxlength="30" inputmode="tel" autocomplete="tel" placeholder="e.g. 0771234567"></label>
+          <label class="checkout-field"><span>Delivery area (optional)</span><input name="location" maxlength="120" placeholder="e.g. Avondale, Harare"></label>
+          <p class="checkout-field" style="margin-bottom:8px"><span>How would you like to pay?</span></p>
+          <div class="payment-choices">
+            <label class="payment-choice"><input type="radio" name="payment_method" value="ecocash" checked><span><strong>EcoCash</strong><small>Payment steps sent on WhatsApp</small></span></label>
+            <label class="payment-choice"><input type="radio" name="payment_method" value="cash"><span><strong>Cash on delivery</strong><small>Pay when your order arrives</small></span></label>
+            <label class="payment-choice"><input type="radio" name="payment_method" value="bank_transfer"><span><strong>Bank transfer</strong><small>Account details sent on WhatsApp</small></span></label>
+          </div>
+          <button class="checkout-primary" type="submit">Place order</button>
+          <button class="checkout-secondary" type="button" id="checkout-cancel">Back to the shop</button>
+        </form>`;
+      checkoutOverlay.append(card);
+      card.querySelector("#checkout-close").addEventListener("click", closeCheckout);
+      card.querySelector("#checkout-cancel").addEventListener("click", closeCheckout);
+      card.querySelector("#checkout-form").addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const errorBox = card.querySelector("#checkout-error");
+        errorBox.classList.remove("is-visible");
+        const button = form.querySelector("button[type=submit]");
+        button.disabled = true;
+        button.textContent = "Placing order...";
+        try {
+          const response = await fetch("/api/checkout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: form.elements.name.value.trim(),
+              phone: form.elements.phone.value.trim(),
+              location: form.elements.location.value.trim(),
+              payment_method: form.elements.payment_method.value,
+              items: inquiryBag.map((item) => ({ variant_id: item.variantId, quantity: 1 }))
+            })
+          });
+          const data = await response.json();
+          if (!response.ok || !data || data.ok !== true) {
+            throw new Error((data && data.error) || "Checkout is not available right now.");
+          }
+          renderCheckoutSuccess(data.order);
+          inquiryBag = [];
+          saveBag();
+          setDrawerOpen(false);
+        } catch (error) {
+          errorBox.textContent = error.message;
+          errorBox.classList.add("is-visible");
+          button.disabled = false;
+          button.textContent = "Place order";
+        }
+      });
+    }
+
+    function renderCheckoutSuccess(order) {
+      const methodNames = { ecocash: "EcoCash", cash: "cash on delivery", bank_transfer: "bank transfer", other: "your chosen method" };
+      const methodName = methodNames[order.payment_method] || "your chosen method";
+      const message = `Hi Internal Frontier, I just placed order ${order.reference} ($${order.total.toFixed(2)}). I chose ${methodName}.`;
+      checkoutOverlay.textContent = "";
+      const card = document.createElement("div");
+      card.className = "checkout-card";
+      card.innerHTML = `
+        <button class="checkout-close" id="checkout-close" type="button" aria-label="Close checkout">×</button>
+        <h2>Order placed</h2>
+        <p class="checkout-sub">Keep this reference. It is your proof of the order.</p>
+        <p class="checkout-success-ref">${order.reference}</p>
+        <p class="checkout-summary">Total <strong>$${order.total.toFixed(2)}</strong> · paying by <strong>${methodName}</strong></p>
+        <p class="checkout-sub">Tap below to confirm with us on WhatsApp and we'll send ${order.payment_method === "ecocash" ? "the EcoCash payment steps" : "payment and delivery details"} right away.</p>
+        <a class="checkout-primary" style="text-decoration:none" href="https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}" target="_blank" rel="noopener noreferrer">Confirm on WhatsApp</a>
+        <button class="checkout-secondary" type="button" id="checkout-done">Done</button>`;
+      checkoutOverlay.append(card);
+      card.querySelector("#checkout-close").addEventListener("click", closeCheckout);
+      card.querySelector("#checkout-done").addEventListener("click", closeCheckout);
+    }
+
     try {
     document.querySelectorAll(".filter-button").forEach((button) => {
       button.addEventListener("click", () => {
@@ -292,6 +439,7 @@
 
     document.getElementById("product-search").addEventListener("input", filterProducts);
     document.getElementById("open-bag").addEventListener("click", () => setDrawerOpen(true));
+    if (siteCheckout) siteCheckout.addEventListener("click", openCheckout);
     document.getElementById("close-bag").addEventListener("click", () => setDrawerOpen(false));
     drawerBackdrop.addEventListener("click", () => setDrawerOpen(false));
     document.addEventListener("keydown", (event) => {
@@ -310,8 +458,14 @@
     });
     sendEnquiry.addEventListener("click", () => {
       if (!inquiryBag.length) return;
-      const productLines = inquiryBag.map((item) => `- ${item.name} (size ${item.size})`).join("\n");
-      const message = `Hi Internal Frontier, I'd like to ask about these pieces:\n${productLines}\nPlease share pricing and availability. Thank you!`;
+      const productLines = inquiryBag.map((item) => {
+        let line = `- ${item.name} (size ${item.size})`;
+        if (item.price !== null && item.price !== undefined) line += ` - $${Number(item.price).toFixed(2)}`;
+        return line;
+      }).join("\n");
+      const allPriced = inquiryBag.every((item) => item.price !== null && item.price !== undefined);
+      const total = allPriced ? `$${inquiryBag.reduce((sum, item) => sum + Number(item.price), 0).toFixed(2)}` : "to be confirmed";
+      const message = `Hi Internal Frontier, I'd like to ask about these pieces:\n${productLines}\nTotal: ${total}. Please confirm availability. Thank you!`;
       window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
       // Message is on its way to WhatsApp: empty the bag and go back to zero
       inquiryBag = [];

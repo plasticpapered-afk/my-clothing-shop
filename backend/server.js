@@ -20,6 +20,7 @@ app.use(
     }
   })
 );
+app.use("/api/admin/upload", express.json({ limit: "5mb" }));
 app.use(express.json({ limit: "20kb" }));
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -45,6 +46,21 @@ app.get("/health", async (req, res) => {
       status: "error",
       message: "Database unavailable"
     });
+  }
+});
+
+// Product photos uploaded from staff devices.
+app.get("/api/media/:id", async (req, res) => {
+  try {
+    const id = Number.parseInt(req.params.id, 10);
+    if (!Number.isInteger(id) || id < 1 || id > 1000000000) return res.status(404).end();
+    const { rows } = await db.query("SELECT mime, data FROM media WHERE id = $1", [id]);
+    if (!rows[0]) return res.status(404).end();
+    res.setHeader("Content-Type", rows[0].mime);
+    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+    res.send(Buffer.from(rows[0].data, "base64"));
+  } catch (error) {
+    res.status(404).end();
   }
 });
 

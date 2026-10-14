@@ -712,6 +712,122 @@ router.put("/api/admin/staff/:id", requireDatabase, requireStaff, requireAdmin, 
   res.json({ ok: true, staff: updated.rows[0] });
 });
 
+// ---------- Photos ----------
+
+const MAX_UPLOAD_BYTES = 3 * 1024 * 1024;
+const PHOTO_PATTERN = /^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/;
+
+router.post("/api/admin/upload", requireDatabase, requireStaff, async (req, res) => {
+  const dataUrl = typeof (req.body && req.body.dataUrl) === "string" ? req.body.dataUrl : "";
+  const match = dataUrl.match(PHOTO_PATTERN);
+  if (!match) return bad(res, "Please choose a JPG, PNG or WebP photo.");
+  const base64 = match[2];
+  const bytes = Math.floor((base64.length * 3) / 4);
+  if (bytes < 100) return bad(res, "That photo seems to be empty.");
+  if (bytes > MAX_UPLOAD_BYTES) return bad(res, "That photo is too big. Please choose a smaller one.");
+  const inserted = await db.query(
+    "INSERT INTO media (mime, data, created_by) VALUES ($1, $2, $3) RETURNING id",
+    [match[1], base64, req.staff.id]
+  );
+  res.json({ ok: true, url: `/api/media/${inserted.rows[0].id}` });
+});
+
+// ---------- Public checkout ----------
+
+// Customers check out on the storefront. The order lands in the back office
+// as a new order with the payment method they chose. Money is confirmed by
+// staff afterwards, exactly like the enquiry flow.
+router.post("/api/checkout", requireDatabase, async (req, res) => {
+  const body = req.body || {};
+  const name = text(body.name);
+  const phone = text(body.phone);
+  const location = text(body.location);
+  const method = PAYMENT_METHODS.includes(body.payment_method) ? body.payment_method : "other";
+  const items = Array.isArray(body.items) ? body.items.slice(0, 20) : [];
+  if (name.length < 2) return bad(res, "Please enter your name.");
+  if (phone.replace(/\D/g, "").length < 6) return bad(res, "Please enter a valid phone number.");
+  if (items.length === 0) return bad(res, "Your bag is empty.");
+
+  try {
+    const created = await db.withTransaction(async (client) => {
+      const byPhone = await client.query("SELECT id, name FROM customers WHERE phone = $1", [phone]);
+      let customerId;
+      if (byPhone.rows[0]) {
+        customerId = byPhone.rows[0].id;
+      } else {
+        const inserted = await client.query(
+          "INSERT INTO customers (name, phone) VALUES ($1, $2) RETURNING id",
+          [name, phone]
+        );
+        customerId = inserted.rows[0].id;
+      }
+
+      const resolvedItems = [];
+      let total = 0;
+      for (const item of items) {
+        const variantId = int(item.variant_id);
+        const quantity = int(item.quantity, 1);
+        if (!variantId || quantity < 1 || quantity > 100) {
+          throw Object.assign(new Error("One of the items in your bag is not valid."), { status: 400 });
+        }
+        const variant = await client.query(
+          `SELECT v.*, p.name AS product_name, p.active AS product_active, COALESCE(v.price, p.base_price) AS price
+           FROM product_variants v JOIN products p ON p.id = v.product_id
+           WHERE v.id = $1`,
+          [variantId]
+        );
+        const row = variant.rows[0];
+        if (!row || !row.active || !row.product_active) {
+          throw Object.assign(new Error("Sorry, one of the pieces is no longer available."), { status: 400 });
+        }
+        if (row.price === null) {
+          throw Object.assign(new Error("Some pieces are price on request. Please confirm those on WhatsApp."), { status: 400 });
+        }
+        if (row.stock < quantity) {
+          const label = [row.product_name, row.size, row.colour].filter(Boolean).join(" / ");
+          throw Object.assign(new Error(`Only ${row.stock} left of ${label}.`), { status: 400 });
+        }
+        const unitPrice = Number(row.price);
+        total += unitPrice * quantity;
+        resolvedItems.push({ row, variantId, quantity, unitPrice });
+      }
+      total = Math.round(total * 100) / 100;
+
+      const order = await client.query(
+        `INSERT INTO orders (reference, customer_id, customer_name, customer_phone, total, notes, payment_method)
+         VALUES ('IF-' || to_char(now(), 'YYMM') || '-' || lpad(nextval('order_ref_seq')::text, 4, '0'),
+                 $1, $2, $3, $4, $5, $6)
+         RETURNING id, reference, total, payment_method`,
+        [customerId, name, phone, total, location ? `Delivery: ${location}` : "", method]
+      );
+      const orderId = order.rows[0].id;
+
+      for (const item of resolvedItems) {
+        await client.query(
+          `INSERT INTO order_items (order_id, product_id, variant_id, product_name, size, colour, quantity, unit_price)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+          [orderId, item.row.product_id, item.variantId, item.row.product_name, item.row.size, item.row.colour, item.quantity, item.unitPrice]
+        );
+        await client.query(
+          "UPDATE product_variants SET stock = stock - $1 WHERE id = $2 AND stock >= $1",
+          [item.quantity, item.variantId]
+        );
+      }
+
+      await client.query("INSERT INTO audit_log (staff_id, action, details) VALUES (NULL, $1, $2)", [
+        "checkout",
+        `order ${order.rows[0].reference} placed on the website by ${name} (${method})`
+      ]);
+      return order.rows[0];
+    });
+
+    res.json({ ok: true, order: { reference: created.reference, total: Number(created.total), payment_method: created.payment_method } });
+  } catch (error) {
+    if (error.status) return bad(res, error.message);
+    throw error;
+  }
+});
+
 // ---------- Audit trail ----------
 
 router.get("/api/admin/audit", requireDatabase, requireStaff, requireAdmin, async (req, res) => {

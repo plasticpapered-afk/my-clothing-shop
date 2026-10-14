@@ -27,6 +27,7 @@
     }
 
     * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
     html { scroll-behavior: smooth; }
     body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--body); }
     button, input, select { font: inherit; }
@@ -119,6 +120,31 @@
     .whatsapp-button:disabled { background: #aab2ab; cursor: not-allowed; }
     .toast { position: fixed; z-index: 30; right: 22px; bottom: 22px; max-width: calc(100% - 44px); padding: 13px 18px; background: var(--forest); color: white; font-size: 12px; opacity: 0; pointer-events: none; transform: translateY(10px); transition: opacity .2s, transform .2s; }
     .toast.is-visible { opacity: 1; transform: translateY(0); }
+    #site-checkout { margin-bottom: 8px; }
+    #bag-total-line { margin: 0 0 10px; font-weight: 700; color: var(--forest); }
+    .checkout-overlay { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 20px 14px; background: rgba(19, 30, 26, .58); overflow-y: auto; }
+    .checkout-card { position: relative; width: min(470px, 100%); background: var(--white); border: 1px solid var(--line); padding: 26px 22px 22px; }
+    .checkout-card h2 { margin: 0 0 4px; font-family: var(--display); font-size: 34px; font-weight: 800; line-height: .95; text-transform: uppercase; color: var(--forest); }
+    .checkout-card .checkout-sub { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
+    .checkout-field { display: block; margin-bottom: 13px; font-size: 12px; font-weight: 600; }
+    .checkout-field span { display: block; margin-bottom: 5px; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); }
+    .checkout-field input { width: 100%; min-height: 42px; padding: 8px 10px; border: 1px solid var(--line); background: #fff; font: inherit; }
+    .payment-choices { display: grid; gap: 8px; margin: 4px 0 16px; }
+    .payment-choice { display: flex; gap: 10px; align-items: center; border: 1px solid var(--line); padding: 11px 12px; cursor: pointer; background: #fff; }
+    .payment-choice:has(input:checked) { border-color: var(--forest); background: #f2f5ec; }
+    .payment-choice input { width: 18px; height: 18px; accent-color: var(--forest); }
+    .payment-choice strong { display: block; font-size: 13px; }
+    .payment-choice small { color: var(--muted); font-size: 11px; }
+    .checkout-error { display: none; margin: 0 0 12px; padding: 10px 12px; background: #f8eae5; border: 1px solid #e5b8ab; color: #b3402a; font-size: 13px; }
+    .checkout-error.is-visible { display: block; }
+    .checkout-summary { margin: 0 0 16px; padding: 12px 14px; background: var(--paper); border: 1px solid var(--line); font-size: 14px; }
+    .checkout-summary strong { color: var(--forest); }
+    .checkout-success-ref { margin: 6px 0 2px; font-family: var(--display); font-size: 30px; font-weight: 800; color: var(--forest); letter-spacing: .5px; }
+    .checkout-close { position: absolute; top: 8px; right: 10px; border: 0; background: transparent; font-size: 26px; line-height: 1; color: var(--muted); cursor: pointer; }
+    .checkout-primary { display: inline-flex; min-height: 46px; align-items: center; justify-content: center; width: 100%; margin-top: 6px; padding: 0 18px; border: 0; background: var(--forest); color: white; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; }
+    .checkout-primary:hover { background: var(--forest-light); }
+    .checkout-secondary { display: block; margin-top: 10px; background: none; border: none; color: var(--muted); font-size: 12px; text-decoration: underline; cursor: pointer; }
+
     .chat-widget { position: fixed; z-index: 18; right: 22px; bottom: 22px; display: grid; justify-items: end; gap: 12px; }
     .chat-launcher { display: inline-flex; min-height: 54px; align-items: center; gap: 11px; padding: 0 19px; border: 0; border-radius: 3px; background: var(--coral); box-shadow: 0 8px 24px rgba(21, 42, 34, .2); color: white; cursor: pointer; font-size: 12px; font-weight: 700; }
     .chat-launcher:hover { background: #d96543; }
@@ -191,7 +217,32 @@
       .story-copy h2 { font-size: 43px; }
       .site-footer { grid-template-columns: 1fr; }
       .footer-meta { text-align: left; }
-      .chat-widget { right: 14px; bottom: 14px; }
+      #site-checkout { margin-bottom: 8px; }
+    #bag-total-line { margin: 0 0 10px; font-weight: 700; color: var(--forest); }
+    .checkout-overlay { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 20px 14px; background: rgba(19, 30, 26, .58); overflow-y: auto; }
+    .checkout-card { position: relative; width: min(470px, 100%); background: var(--white); border: 1px solid var(--line); padding: 26px 22px 22px; }
+    .checkout-card h2 { margin: 0 0 4px; font-family: var(--display); font-size: 34px; font-weight: 800; line-height: .95; text-transform: uppercase; color: var(--forest); }
+    .checkout-card .checkout-sub { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
+    .checkout-field { display: block; margin-bottom: 13px; font-size: 12px; font-weight: 600; }
+    .checkout-field span { display: block; margin-bottom: 5px; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); }
+    .checkout-field input { width: 100%; min-height: 42px; padding: 8px 10px; border: 1px solid var(--line); background: #fff; font: inherit; }
+    .payment-choices { display: grid; gap: 8px; margin: 4px 0 16px; }
+    .payment-choice { display: flex; gap: 10px; align-items: center; border: 1px solid var(--line); padding: 11px 12px; cursor: pointer; background: #fff; }
+    .payment-choice:has(input:checked) { border-color: var(--forest); background: #f2f5ec; }
+    .payment-choice input { width: 18px; height: 18px; accent-color: var(--forest); }
+    .payment-choice strong { display: block; font-size: 13px; }
+    .payment-choice small { color: var(--muted); font-size: 11px; }
+    .checkout-error { display: none; margin: 0 0 12px; padding: 10px 12px; background: #f8eae5; border: 1px solid #e5b8ab; color: #b3402a; font-size: 13px; }
+    .checkout-error.is-visible { display: block; }
+    .checkout-summary { margin: 0 0 16px; padding: 12px 14px; background: var(--paper); border: 1px solid var(--line); font-size: 14px; }
+    .checkout-summary strong { color: var(--forest); }
+    .checkout-success-ref { margin: 6px 0 2px; font-family: var(--display); font-size: 30px; font-weight: 800; color: var(--forest); letter-spacing: .5px; }
+    .checkout-close { position: absolute; top: 8px; right: 10px; border: 0; background: transparent; font-size: 26px; line-height: 1; color: var(--muted); cursor: pointer; }
+    .checkout-primary { display: inline-flex; min-height: 46px; align-items: center; justify-content: center; width: 100%; margin-top: 6px; padding: 0 18px; border: 0; background: var(--forest); color: white; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; }
+    .checkout-primary:hover { background: var(--forest-light); }
+    .checkout-secondary { display: block; margin-top: 10px; background: none; border: none; color: var(--muted); font-size: 12px; text-decoration: underline; cursor: pointer; }
+
+    .chat-widget { right: 14px; bottom: 14px; }
       .chat-launcher { min-height: 50px; padding: 0 15px; }
       .chat-panel { max-height: calc(100dvh - 88px); }
     }
@@ -322,7 +373,7 @@
   <aside class="bag-drawer" id="bag-drawer" role="dialog" aria-modal="true" aria-labelledby="bag-title" aria-hidden="true" inert>
     <div class="drawer-header"><h2 id="bag-title">Your enquiry</h2><button class="icon-button" id="close-bag" type="button" aria-label="Close inquiry bag">×</button></div>
     <div class="bag-items" id="bag-items" aria-live="polite"></div>
-    <div class="drawer-footer"><p>Prices and availability are confirmed directly with Internal Frontier.</p><button class="whatsapp-button" id="send-enquiry" type="button" disabled>Continue on WhatsApp</button></div>
+    <div class="drawer-footer"><p>Prices and availability are confirmed directly with Internal Frontier.</p><p id="bag-total-line" hidden></p><button class="whatsapp-button" id="site-checkout" type="button" disabled>Check out on the site</button><button class="whatsapp-button" id="send-enquiry" type="button" disabled>Ask on WhatsApp</button></div>
   </aside>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <div class="chat-widget">

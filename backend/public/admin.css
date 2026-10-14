@@ -14,6 +14,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; } /* beats any display rule so hidden elements really hide */
 body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 15px; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }

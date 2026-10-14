@@ -50,6 +50,29 @@ function fmtDate(value) {
   return new Date(value).toLocaleDateString(undefined, { day: "2-digit", month: "short", year: "numeric" });
 }
 
+// Shrinks a photo in the browser before uploading so it loads fast on
+// phones and never exceeds the upload limit.
+function resizePhoto(file, maxSide = 1000) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Could not read that photo."));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("That file is not a valid photo."));
+      img.onload = () => {
+        const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(img.width * scale));
+        canvas.height = Math.max(1, Math.round(img.height * scale));
+        canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 let toastTimer;
 function showToast(message) {
   els.toast.textContent = message;
@@ -335,7 +358,12 @@ function openProductModal(product) {
           <label class="field"><span>Short label (shown on the photo)</span><input name="label" maxlength="40" value="${escapeHtml(v.label)}" placeholder="e.g. Tracksuit"></label>
         </div>
         <label class="field"><span>Price in dollars (leave empty for price on request)</span><input name="base_price" type="number" step="0.01" min="0" placeholder="e.g. 25" value="${v.base_price === null || v.base_price === undefined ? "" : v.base_price}"></label>
-        <label class="field"><span>Photo (image file in the site images folder, or a full https link)</span><input name="image_url" maxlength="300" value="${escapeHtml(v.image_url)}" placeholder="images/my-photo.jpg"></label>
+        <label class="field"><span>Photo (choose from your device, or paste a link)</span>
+          <input name="image_url" id="image-url" maxlength="300" value="${escapeHtml(v.image_url)}" placeholder="Choose a photo below">
+          <input type="file" id="photo-file" accept="image/jpeg,image/png,image/webp" capture="environment" style="margin-top:8px">
+          <img id="photo-preview" alt="" ${v.image_url ? `src="${escapeHtml(v.image_url)}"` : ""} style="display:${v.image_url ? "block" : "none"};width:90px;height:90px;object-fit:cover;margin-top:8px;border:1px solid var(--line)">
+          <p class="small muted" style="margin:6px 0 0">Pick a photo from your phone or computer. It is stored in your database automatically.</p>
+        </label>
         <label class="field"><span>Description</span><textarea name="description" maxlength="500">${escapeHtml(v.description)}</textarea></label>
         <label class="checkbox-row"><input type="checkbox" name="active" ${v.active ? "checked" : ""}> Live on the shop</label>
 
@@ -417,6 +445,23 @@ function openProductModal(product) {
         close();
         openProductModal(result.product);
       } catch (error) { showToast(error.message); }
+    }
+  });
+
+  modal.querySelector("#photo-file").addEventListener("change", async (event) => {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    showToast("Uploading photo...");
+    try {
+      const dataUrl = await resizePhoto(file);
+      const uploaded = await api("/api/admin/upload", { method: "POST", body: JSON.stringify({ dataUrl }) });
+      modal.querySelector("#image-url").value = uploaded.url;
+      const preview = modal.querySelector("#photo-preview");
+      preview.src = uploaded.url;
+      preview.style.display = "block";
+      showToast("Photo added. Remember to save the product.");
+    } catch (error) {
+      showToast(error.message);
     }
   });
 
@@ -562,6 +607,7 @@ async function renderOrderDetail(id) {
       <div class="card">
         <h3 class="panel-title">Customer</h3>
         <p><strong>${escapeHtml(order.customer_name)}</strong><br>${escapeHtml(order.customer_phone)}</p>
+        ${order.payment_method ? `<p class="small"><strong>Customer chose:</strong> ${METHOD_LABELS[order.payment_method] || escapeHtml(order.payment_method)}</p>` : ""}
         ${order.notes ? `<p class="small muted">${escapeHtml(order.notes)}</p>` : ""}
         <p class="small muted">Created ${fmtDate(order.created_at)}</p>
         <h3 class="panel-title" style="margin-top:20px">Payments received</h3>

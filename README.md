@@ -62,3 +62,9 @@ The back office needs a PostgreSQL database:
 The storefront keeps working without these, using the pieces built into the page. Create the database, add the variables in Vercel under Project Settings > Environment Variables, redeploy, then open `/admin` to create the first account.
 
 On Vercel, remember the project Root Directory is `backend` and the preset is Express.
+
+### Photos and customer checkout
+
+Product photos can be chosen straight from a device in the back office. The browser shrinks the photo, it is stored in the `media` table, and it is served from `/api/media/<id>` with long-lived caching.
+
+Customers can also check out on the site: the bag shows prices and a total when prices are set, and "Check out on the site" collects their details, delivery area and payment method (EcoCash, cash on delivery or bank transfer). The order lands in the back office as a new order with a unique reference and the chosen method, stock is reserved immediately, and payment is confirmed by the shop on WhatsApp and recorded in the back office. Pieces without a price stay on "price on request" and continue through the WhatsApp enquiry flow.

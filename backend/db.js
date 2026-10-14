@@ -159,6 +159,16 @@ CREATE TABLE IF NOT EXISTS audit_log (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS media (
+  id serial PRIMARY KEY,
+  mime text NOT NULL,
+  data text NOT NULL,
+  created_by int REFERENCES staff(id),
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method text NOT NULL DEFAULT '';
+
 CREATE INDEX IF NOT EXISTS order_items_order_id_idx ON order_items (order_id);
 CREATE INDEX IF NOT EXISTS payments_order_id_idx ON payments (order_id);
 CREATE INDEX IF NOT EXISTS product_variants_product_id_idx ON product_variants (product_id);
