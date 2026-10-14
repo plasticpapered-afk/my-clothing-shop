@@ -79,3 +79,7 @@ Set these environment variables to switch on automatic mobile money payments:
 When it is on, choosing EcoCash at checkout sends a PIN prompt to the customer's phone; InnBucks gives them an authorization code to approve in the InnBucks app. The storefront polls for approval, Paynow posts the final result to `/api/payments/paynow/callback` (hash-verified), and the order is marked paid automatically with the payment recorded in the audit trail. Webhooks are idempotent, and a tampered one is rejected. Without these variables the shop stays on the manual WhatsApp flow.
 
 Every order has a printable receipt at `/receipt/<reference>` with a private token link, shown to the customer after checkout and available from the back office order detail.
+
+Online payments also give the customer their own live status page at `/status/<reference>`. It shows *payment pending*, flips to *payment approved* the moment Paynow confirms, shows the InnBucks authorization code, and has a "send the prompt again" button for when the first prompt never reached the phone. The dashboard shows at a glance whether Paynow is connected, the storefront hides EcoCash/InnBucks when it is not, and a failed payment start shows the customer a clear error instead of a silent fallback.
+
+Important: Vercel Deployment Protection must be off for Production, otherwise Paynow's servers cannot reach `/api/payments/paynow/callback` and customers outside the team cannot use the shop.

@@ -225,6 +225,93 @@ app.get("/receipt/:reference", async (req, res) => {
   }
 });
 
+// Payment status page: the customer's own page showing whether their
+// EcoCash / InnBucks payment is pending, approved or cancelled. Kept live
+// by polling, and offers a "send the prompt again" button for weak signal.
+const { receiptToken: statusToken } = require("./auth");
+
+function statusHtml(order) {
+  const methodLabels = { ecocash: "EcoCash", innbucks: "InnBucks", cash: "Cash on delivery", bank_transfer: "Bank transfer", other: "Other" };
+  const method = methodLabels[order.payment_method] || "Other";
+  const online = order.payment_method === "ecocash" || order.payment_method === "innbucks";
+  const statusOrder = order.payment_status === "paid" ? "paid" : order.payment_status;
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Order ${order.reference} | Internal Frontier</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #f5f3eb; font-family: "DM Sans", Arial, sans-serif; color: #1d2925; }
+  .sheet { max-width: 470px; margin: 20px auto; background: #fffefa; border: 1px solid #d8dcd2; padding: 26px 22px; }
+  .brand { font-family: "Barlow Condensed", Impact, sans-serif; font-size: 26px; font-weight: 800; color: #173c32; text-decoration: none; }
+  h1 { margin: 14px 0 2px; font-size: 22px; }
+  .ref { margin: 0 0 16px; color: #6a736e; font-size: 13px; }
+  .summary { padding: 12px 14px; background: #f1f5e8; border: 1px solid #d8dcd2; font-size: 14px; margin: 0 0 14px; }
+  .summary strong { color: #173c32; }
+  .badge { display: block; padding: 14px; text-align: center; font-size: 14px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; border: 2px solid; margin: 0 0 16px; }
+  .pending { color: #8a6d1a; border-color: #c9a227; background: #fdf6dd; }
+  .approved { color: #173c32; border-color: #173c32; background: #d4e66d; }
+  .cancelled { color: #b3402a; border-color: #b3402a; background: #fdeae5; }
+  .instructions { font-size: 14px; line-height: 1.6; margin: 0 0 14px; }
+  .code { font-family: "Barlow Condensed", Impact, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 2px; color: #173c32; text-align: center; margin: 8px 0; }
+  .expiry { text-align: center; color: #6a736e; font-size: 12px; margin: 0 0 14px; }
+  .btn { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 48px; margin-top: 10px; padding: 0 18px; border: 0; background: #173c32; color: #fff; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; text-decoration: none; cursor: pointer; }
+  .btn.light { background: #fff; color: #173c32; border: 1px solid #173c32; }
+  .btn:disabled { opacity: .5; }
+  .note { color: #6a736e; font-size: 12px; text-align: center; margin: 12px 0 0; }
+  .error-box { display: none; padding: 10px 12px; margin: 0 0 12px; background: #fdeae5; border: 1px solid #e5b8ab; color: #b3402a; font-size: 13px; }
+  .error-box.visible { display: block; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <a class="brand" href="/">INTERNAL FRONTIER</a>
+  <h1>Payment status</h1>
+  <p class="ref">Order ${order.reference}</p>
+  <p class="summary">Total <strong>$${Number(order.total).toFixed(2)}</strong> · paying by <strong>${method}</strong></p>
+  <span class="badge ${statusOrder === "paid" ? "approved" : statusOrder === "unpaid" ? "pending" : "cancelled"}" id="status-badge">
+    ${statusOrder === "paid" ? "✓ Payment approved" : statusOrder === "unpaid" ? "⏳ Payment pending" : "Payment " + statusOrder}
+  </span>
+  <div class="error-box" id="error-box"></div>
+  <p class="instructions" id="instructions"></p>
+  <p class="code" id="auth-code" hidden></p>
+  <p class="expiry" id="auth-expiry" hidden></p>
+  <a class="btn" id="innbucks-open" hidden href="#">Open in InnBucks app</a>
+  <button class="btn light" id="retry-btn" hidden type="button">I didn't get the prompt — send it again</button>
+  <a class="btn light" id="whatsapp-btn" target="_blank" rel="noopener noreferrer" href="#">Message us on WhatsApp</a>
+  <a class="btn light" id="receipt-link" href="/receipt/${order.reference}?t=${statusToken(order.reference)}">View receipt</a>
+  <p class="note" id="poll-note">This page updates itself.</p>
+</div>
+<script src="/status.js"
+  data-reference="${order.reference}"
+  data-method="${order.payment_method}"
+  data-online="${online ? "true" : "false"}"
+  data-total="${Number(order.total).toFixed(2)}"></script>
+</body>
+</html>`;
+}
+
+app.get("/status/:reference", async (req, res) => {
+  try {
+    const reference = String(req.params.reference || "").slice(0, 40);
+    const token = String(req.query.t || "");
+    if (!reference || token !== statusToken(reference)) {
+      return res.status(404).send("Order not found.");
+    }
+    const found = await db.query("SELECT * FROM orders WHERE reference = $1", [reference]);
+    const order = found.rows[0];
+    if (!order) return res.status(404).send("Order not found.");
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.send(statusHtml(order));
+  } catch (error) {
+    console.error("Status page error:", error.message);
+    res.status(404).send("Order not found.");
+  }
+});
+
 // Back office API and page.
 app.use(adminRouter);
 

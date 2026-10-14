@@ -249,6 +249,7 @@ async function renderDashboard() {
       <div class="stat"><p class="stat-label">Items in stock</p><p class="stat-value">${stats.stock}</p><p class="stat-note">Across all sizes and colours</p></div>
       <div class="stat"><p class="stat-label">Open orders</p><p class="stat-value">${openOrders}</p><p class="stat-note">New, confirmed or dispatched</p></div>
       <div class="stat"><p class="stat-label">Paid revenue</p><p class="stat-value">$${Number(stats.revenuePaid || 0).toFixed(2)}</p><p class="stat-note">From orders marked fully paid</p></div>
+      <div class="stat"><p class="stat-label">Online payments (Paynow)</p><p class="stat-value">${stats.paynowConfigured ? "Connected" : "Off"}</p><p class="stat-note">${stats.paynowConfigured ? "EcoCash and InnBucks are live" : "Add PAYNOW_INTEGRATION_ID and PAYNOW_INTEGRATION_KEY on Vercel, then redeploy"}</p></div>
     </div>
     <div class="grid-2">
       <div class="card">

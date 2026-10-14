@@ -237,6 +237,7 @@ router.get("/api/admin/stats", requireDatabase, requireStaff, async (req, res) =
       variants: variantTotals.rows[0].variants,
       orders: statusCounts,
       revenuePaid: Number(revenue.rows[0].revenue || 0),
+      paynowConfigured: paynow.isConfigured(),
       recentOrders: recentOrders.rows,
       lowStock: lowStock.rows
     }
@@ -892,9 +893,10 @@ router.post("/api/checkout", requireDatabase, async (req, res) => {
           returnUrl: receiptUrl
         });
         await db.query(
-          "UPDATE orders SET paynow_pollurl = $1, paynow_status = $2 WHERE id = $3",
-          [initiated.pollurl, "Initiated", created.id]
+          "UPDATE orders SET paynow_pollurl = $1, paynow_status = $2, paynow_phone = $3 WHERE id = $4",
+          [initiated.pollurl, "Initiated", mobilePhone, created.id]
         );
+        retryAttempts.set(created.reference, Date.now());
         paynowResult = {
           started: true,
           method,
@@ -917,7 +919,9 @@ router.post("/api/checkout", requireDatabase, async (req, res) => {
         payment_method: created.payment_method
       },
       paynow: paynowResult,
-      receipt_url: `/receipt/${created.reference}?t=${receiptToken(created.reference)}`
+      paynow_configured: paynow.isConfigured(),
+      receipt_url: `/receipt/${created.reference}?t=${receiptToken(created.reference)}`,
+      status_url: `/status/${created.reference}?t=${receiptToken(created.reference)}`
     });
   } catch (error) {
     if (error.status) return bad(res, error.message);
@@ -951,6 +955,73 @@ router.post("/api/payments/paynow/status", requireDatabase, async (req, res) => 
   } catch (error) {
     // A poll failure is not fatal - the customer can try again.
     res.json({ ok: true, status: order.payment_status, error: error.message });
+  }
+});
+
+// Lets the storefront know if online payments are switched on, so the
+// EcoCash / InnBucks options are never offered when they cannot work.
+router.get("/api/payments/availability", (req, res) => {
+  res.json({ ok: true, online: paynow.isConfigured() });
+});
+
+// Sends the payment prompt again. Meant for the customer's status page
+// when the first prompt never reached their phone (weak signal happens).
+const retryAttempts = new Map();
+const retryCooldownMs = () => Number(process.env.PAYNOW_RETRY_COOLDOWN_MS || 20000);
+
+router.post("/api/payments/paynow/retry", requireDatabase, async (req, res) => {
+  const reference = text(req.body && req.body.reference);
+  const found = await db.query("SELECT * FROM orders WHERE reference = $1", [reference]);
+  const order = found.rows[0];
+  if (!order) return bad(res, "Order not found.");
+  if (!paynow.isConfigured()) return bad(res, "Online payments are not switched on right now.");
+  if (!paynow.MOBILE_METHODS.includes(order.payment_method)) {
+    return bad(res, "This order is not an online payment order.");
+  }
+  if (order.payment_status === "paid") return bad(res, "This order is already paid.");
+  if (order.status === "cancelled") return bad(res, "This order was cancelled.");
+
+  const cooldown = retryCooldownMs();
+  const lastAttempt = retryAttempts.get(reference) || 0;
+  if (Date.now() - lastAttempt < cooldown) {
+    const seconds = Math.ceil((cooldown - (Date.now() - lastAttempt)) / 1000);
+    return bad(res, `Please wait about ${seconds} more seconds before trying again.`);
+  }
+  retryAttempts.set(reference, Date.now());
+
+  const phone = paynow.normalisePhone(order.paynow_phone) || paynow.normalisePhone(order.customer_phone);
+  if (!phone) return bad(res, "This order has no valid mobile money number on file.");
+
+  try {
+    const baseUrl = requestBaseUrl(req);
+    const initiated = await paynow.initiateExpress({
+      reference: order.reference,
+      amount: Number(order.total),
+      description: `Internal Frontier order ${order.reference}`,
+      phone,
+      method: order.payment_method,
+      resultUrl: `${baseUrl}/api/payments/paynow/callback`,
+      returnUrl: `${baseUrl}/receipt/${order.reference}?t=${receiptToken(order.reference)}`
+    });
+    await db.query(
+      "UPDATE orders SET paynow_pollurl = $1, paynow_status = 'Initiated', paynow_phone = $2, updated_at = now() WHERE id = $3",
+      [initiated.pollurl, phone, order.id]
+    );
+    await db.query("INSERT INTO audit_log (staff_id, action, details) VALUES (NULL, $1, $2)", [
+      "paynow_retry",
+      `order ${order.reference}: payment prompt resent to ${phone}`
+    ]);
+    res.json({
+      ok: true,
+      method: order.payment_method,
+      phone,
+      instructions: initiated.instructions,
+      authorizationcode: initiated.authorizationcode,
+      authorizationexpires: initiated.authorizationexpires
+    });
+  } catch (error) {
+    console.error("Paynow retry failed:", error.message);
+    bad(res, error.message || "Paynow could not send the prompt again.");
   }
 });
 

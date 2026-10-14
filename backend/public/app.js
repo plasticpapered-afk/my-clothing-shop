@@ -342,7 +342,7 @@
       checkoutOverlay.hidden = false;
     }
 
-    function renderCheckoutForm() {
+    async function renderCheckoutForm() {
       const total = inquiryBag.reduce((sum, item) => sum + Number(item.price), 0);
       checkoutOverlay.textContent = "";
       const card = document.createElement("div");
@@ -364,20 +364,45 @@
             <label class="payment-choice"><input type="radio" name="payment_method" value="cash"><span><strong>Cash on delivery</strong><small>Pay when your order arrives</small></span></label>
             <label class="payment-choice"><input type="radio" name="payment_method" value="bank_transfer"><span><strong>Bank transfer</strong><small>Account details sent on WhatsApp</small></span></label>
           </div>
-          <label class="checkout-field" id="mobile-money-field" hidden><span>EcoCash / InnBucks number to charge</span><input name="mobile_phone" maxlength="20" inputmode="tel" placeholder="e.g. 0771234567"></label>
+          <label class="checkout-field" id="ecocash-number-field" hidden><span>Your EcoCash number (the one that gets the PIN prompt)</span><input name="ecocash_phone" maxlength="20" inputmode="tel" placeholder="e.g. 0771234567"></label>
+          <label class="checkout-field" id="innbucks-number-field" hidden><span>Your InnBucks number (the wallet to pay from)</span><input name="innbucks_phone" maxlength="20" inputmode="tel" placeholder="e.g. 0771234567"></label>
+          <p class="checkout-error" id="availability-note" hidden></p>
           <button class="checkout-primary" type="submit">Place order</button>
           <button class="checkout-secondary" type="button" id="checkout-cancel">Back to the shop</button>
         </form>`;
-      const mobileField = card.querySelector("#mobile-money-field");
-      const updateMobileField = () => {
-        const chosen = form && form.elements.payment_method ? form.elements.payment_method.value : "ecocash";
-        mobileField.hidden = !(chosen === "ecocash" || chosen === "innbucks");
-      };
+      const ecocashField = card.querySelector("#ecocash-number-field");
+      const innbucksField = card.querySelector("#innbucks-number-field");
+      const availabilityNote = card.querySelector("#availability-note");
       const form = card.querySelector("#checkout-form");
+      const updateMobileField = () => {
+        const chosen = form.elements.payment_method.value;
+        ecocashField.hidden = chosen !== "ecocash";
+        innbucksField.hidden = chosen !== "innbucks";
+      };
       [...form.querySelectorAll("input[name=payment_method]")].forEach((radio) => {
         radio.addEventListener("change", updateMobileField);
       });
       updateMobileField();
+      // Never offer EcoCash / InnBucks when online payments are switched off,
+      // so nobody waits for a prompt that will never come.
+      try {
+        const availability = await fetch("/api/payments/availability");
+        const availabilityData = await availability.json();
+        if (!availabilityData || availabilityData.online !== true) {
+          const mobileChoices = [...form.querySelectorAll("input[name=payment_method]")].filter((radio) => radio.value === "ecocash" || radio.value === "innbucks");
+          mobileChoices.forEach((radio) => {
+            radio.disabled = true;
+            radio.closest(".payment-choice").style.opacity = "0.45";
+          });
+          if (form.elements.payment_method.value === "ecocash" || form.elements.payment_method.value === "innbucks") {
+            form.querySelector('input[name="payment_method"][value="cash"]').checked = true;
+          }
+          updateMobileField();
+          availabilityNote.textContent = "Online EcoCash / InnBucks payment is temporarily unavailable. You can still order and pay on delivery or by bank transfer.";
+          availabilityNote.classList.add("is-visible");
+          availabilityNote.hidden = false;
+        }
+      } catch (error) { /* keep all options; worst case the order still goes through */ }
       checkoutOverlay.append(card);
       card.querySelector("#checkout-close").addEventListener("click", closeCheckout);
       card.querySelector("#checkout-cancel").addEventListener("click", closeCheckout);
@@ -398,13 +423,20 @@
               phone: form.elements.phone.value.trim(),
               location: form.elements.location.value.trim(),
               payment_method: form.elements.payment_method.value,
-              mobile_phone: form.elements.mobile_phone ? form.elements.mobile_phone.value.trim() : "",
+              mobile_phone: form.elements.payment_method.value === "ecocash"
+                ? (form.elements.ecocash_phone ? form.elements.ecocash_phone.value.trim() : "")
+                : (form.elements.innbucks_phone ? form.elements.innbucks_phone.value.trim() : ""),
               items: inquiryBag.map((item) => ({ variant_id: item.variantId, quantity: 1 }))
             })
           });
           const data = await response.json();
           if (!response.ok || !data || data.ok !== true) {
             throw new Error((data && data.error) || "Checkout is not available right now.");
+          }
+          const onlineStarted = data.paynow && data.paynow.started;
+          if (onlineStarted && data.status_url) {
+            window.location.href = data.status_url;
+            return;
           }
           renderCheckoutSuccess(data.order, data.paynow, data.receipt_url);
           inquiryBag = [];
@@ -473,12 +505,14 @@
         return;
       }
 
-      const note = paynow && paynow.started === false
-        ? "We could not start the online payment automatically. Please confirm with us on WhatsApp and we'll sort it out."
+      const failedOnline = paynow && paynow.started === false;
+      const note = failedOnline
+        ? `Online payment did not start: ${(paynow.error || "Paynow is not reachable right now")}. Your order is safe with reference ${order.reference}. Please pay on WhatsApp and we'll sort it out.`
         : `We'll confirm your order on WhatsApp with ${order.payment_method === "bank_transfer" ? "our bank details" : "payment and delivery details"}.`;
       const message = `Hi Internal Frontier, I just placed order ${order.reference} ($${order.total.toFixed(2)}). I chose ${methodName}.`;
       card.innerHTML = `${base}
-        <p class="checkout-sub">${note}</p>
+        <div class="checkout-error ${failedOnline ? "is-visible" : ""}">${failedOnline ? note : ""}</div>
+        <p class="checkout-sub">${failedOnline ? "Your order is saved. Pay directly with us on WhatsApp:" : note}</p>
         <a class="checkout-primary" style="text-decoration:none" href="https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}" target="_blank" rel="noopener noreferrer">Confirm on WhatsApp</a>
         ${receiptUrl ? `<a class="checkout-secondary" href="${receiptUrl}">View receipt</a>` : ""}
         <button class="checkout-secondary" type="button" id="checkout-done">Done</button>`;
