@@ -61,7 +61,7 @@ app.post("/api/chat", async (req, res) => {
     const status = (process.env.GEMINI_API_KEY || process.env.AI_GATEWAY_API_KEY) ? 502 : 503;
     return res.status(status).json({
       ok: false,
-      error: status === 503 ? "The AI assistant is not configured." : "The AI assistant is temporarily unavailable."
+      error: status === 503 ? "The AI assistant is not configured." : `The AI assistant is temporarily unavailable. (${(error && error.message) || "unknown error"})`
     });
   }
 });
