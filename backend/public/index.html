@@ -195,6 +195,42 @@
       .chat-launcher { min-height: 50px; padding: 0 15px; }
       .chat-panel { max-height: calc(100dvh - 88px); }
     }
+
+    /* ===== Refresh: photo hero + softer rounded look ===== */
+    :root { --radius: 14px; --radius-sm: 10px; --radius-pill: 999px; }
+    .hero { position: relative; display: flex; min-height: min(78vh, 680px); align-items: center; padding: 60px 8%; background: #1b0f2e url("images/hero-banner.jpg") right center / cover no-repeat; }
+    .hero::before { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(20, 8, 38, .55) 0%, rgba(20, 8, 38, .18) 48%, rgba(20, 8, 38, 0) 70%); content: ""; }
+    .hero-copy { position: relative; z-index: 1; max-width: 520px; }
+    .hero h1 { text-shadow: 0 4px 24px rgba(20, 8, 38, .35); }
+    .hero p { color: rgba(255, 255, 255, .92); }
+    .hero .primary-button { background: var(--lime); }
+
+    .primary-button, .bag-button, .add-button, .whatsapp-button, .filter-button, .chat-launcher, .chat-send, .chat-close, .remove-item { border-radius: var(--radius-pill); }
+    .size-select, .chat-input, .search-wrap { border-radius: var(--radius-sm); }
+    .search-wrap { padding: 0 12px; border: 1px solid var(--line); background: var(--white); }
+    .size-select { border: 1px solid var(--line); }
+    .product-image, .story-image { border-radius: var(--radius); }
+    .product-label { border-radius: var(--radius-pill); padding: 7px 12px; }
+    .chat-panel { border-radius: 18px; }
+    .chat-message { border-radius: 14px; }
+    .chat-mark { border-radius: 10px; }
+    .bag-drawer { border-radius: 20px 0 0 20px; }
+    .bag-item img { border-radius: var(--radius-sm); }
+    .toast { border-radius: var(--radius-pill); }
+    .story { margin: 0 4% 60px; overflow: hidden; border-radius: 22px; }
+    .story-image { border-radius: 0; }
+    .site-footer { border-radius: 22px 22px 0 0; }
+    .chat-send { width: 42px; border-radius: 50%; }
+    .chat-input { padding: 0 14px; }
+
+    @media (max-width: 520px) {
+      .hero { min-height: 520px; padding: 44px 6%; background-image: url("images/hero-banner-mobile.jpg"); background-position: center top; align-items: flex-end; }
+      .hero::before { background: linear-gradient(0deg, rgba(20, 8, 38, .78) 0%, rgba(20, 8, 38, .25) 55%, rgba(20, 8, 38, 0) 100%); }
+      .hero h1 { font-size: clamp(46px, 14vw, 64px); }
+      .hero p { max-width: 100%; font-size: 13px; }
+      .story { margin: 0 3% 40px; }
+      .bag-drawer { border-radius: 20px 0 0 20px; }
+    }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
     }
@@ -219,7 +255,6 @@
         <p>Clothing for the road you make yourself. Everyday pieces, considered details, and room to move your own way.</p>
         <a class="primary-button" href="#shop">Shop the collection</a>
       </div>
-      <img class="hero-feature-image" src="images/WhatsApp%20Image%202026-10-10%20at%2022.56.42.jpeg" alt="Model wearing the Internal Frontier Silent Wars graphic tee" fetchpriority="high">
     </section>
 
     <section class="manifesto" aria-label="Our point of view">

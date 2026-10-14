@@ -225,6 +225,11 @@
       const productLines = inquiryBag.map((item) => `- ${item.name} (size ${item.size})`).join("\n");
       const message = `Hi Internal Frontier, I'd like to ask about these pieces:\n${productLines}\nPlease share pricing and availability. Thank you!`;
       window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+      // Message is on its way to WhatsApp: empty the bag and go back to zero
+      inquiryBag = [];
+      saveBag();
+      setDrawerOpen(false);
+      showToast("Enquiry sent to WhatsApp. Your bag is clear.");
     });
 
     renderBag();
