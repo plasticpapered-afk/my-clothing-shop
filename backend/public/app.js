@@ -126,27 +126,29 @@
 
     async function respondToChatMessage(message) {
       const status = document.querySelector(".chat-status");
+      const fallback = "Thanks for reaching out. For the quickest answer, send us a WhatsApp message and we\u2019ll confirm the details for you.";
 
-      try {
-        const response = await fetch("/api/chat", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ message })
-        });
-
-        const data = await response.json();
-        if (!response.ok || !data || data.ok !== true) {
-          throw new Error((data && data.error) || "Chat request failed");
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message })
+          });
+          const data = await response.json();
+          if (!response.ok || !data || data.ok !== true) {
+            throw new Error((data && data.error) || "Chat request failed");
+          }
+          if (status) status.textContent = "AI assistant online";
+          appendChatMessage(data.reply, "assistant");
+          return;
+        } catch (error) {
+          if (attempt === 0) await new Promise((resolve) => setTimeout(resolve, 800));
         }
-
-        if (status) status.textContent = "AI assistant online";
-        appendChatMessage(data.reply, "assistant");
-      } catch (error) {
-        if (status) status.textContent = "AI assistant unavailable";
-        appendChatMessage("Thanks for reaching out. For the quickest answer, send us a WhatsApp message and we’ll confirm the details for you.", "assistant");
       }
+
+      if (status) status.textContent = "AI assistant busy";
+      appendChatMessage(fallback, "assistant");
     }
 
     function setupScrollReveals() {
