@@ -33,3 +33,7 @@ Set `DATABASE_URL` for the PostgreSQL health check if you want the database stat
 2. The shop page and product images are in `backend/public`, so Vercel includes them when `backend` is the project Root Directory.
 3. Add these Environment Variables before deploying: `AI_GATEWAY_API_KEY` (needed for the chat assistant). Optional: `AI_GATEWAY_MODEL`, `DATABASE_URL`, `DATABASE_SSL`.
 4. Deploy. Local use is unchanged: run `npm install` then `npm start` inside `backend`.
+
+## Free AI option (Gemini)
+
+The chat assistant can use a free Google Gemini key. In Vercel, add the Environment Variable `GEMINI_API_KEY` (get the key from aistudio.google.com) and redeploy. Optionally set `GEMINI_MODEL` (default `gemini-2.5-flash`). If `GEMINI_API_KEY` is set it is used first; otherwise the app falls back to `AI_GATEWAY_API_KEY`.

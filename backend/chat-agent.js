@@ -1,19 +1,39 @@
+const geminiUrl = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
 const gatewayUrl = "https://ai-gateway.vercel.sh/v1/chat/completions";
 
+// Prefer the free Gemini key; fall back to the Vercel AI Gateway key if that is what is set.
+function getProvider() {
+  if (process.env.GEMINI_API_KEY) {
+    return {
+      url: geminiUrl,
+      apiKey: process.env.GEMINI_API_KEY,
+      model: process.env.GEMINI_MODEL || "gemini-2.5-flash"
+    };
+  }
+  if (process.env.AI_GATEWAY_API_KEY) {
+    return {
+      url: gatewayUrl,
+      apiKey: process.env.AI_GATEWAY_API_KEY,
+      model: process.env.AI_GATEWAY_MODEL || "openai/gpt-4o-mini"
+    };
+  }
+  return null;
+}
+
 async function generateChatReply(message) {
-  const apiKey = process.env.AI_GATEWAY_API_KEY;
-  if (!apiKey) {
+  const provider = getProvider();
+  if (!provider) {
     throw new Error("AI_GATEWAY_API_KEY is not configured");
   }
 
-  const response = await fetch(gatewayUrl, {
+  const response = await fetch(provider.url, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`
+      Authorization: `Bearer ${provider.apiKey}`
     },
     body: JSON.stringify({
-      model: process.env.AI_GATEWAY_MODEL || "openai/gpt-4o-mini",
+      model: provider.model,
       temperature: 0.7,
       messages: [
         {
