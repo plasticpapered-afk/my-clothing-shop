@@ -7,7 +7,7 @@ function getProvider() {
     return {
       url: geminiUrl,
       apiKey: process.env.GEMINI_API_KEY,
-      model: process.env.GEMINI_MODEL || "gemini-2.5-flash"
+      model: process.env.GEMINI_MODEL || "gemini-3.8-flash"
     };
   }
   if (process.env.AI_GATEWAY_API_KEY) {
