@@ -1,8 +1,8 @@
 # Internal Frontier
 
-Internal Frontier clothing storefront and live chat enquiry flow.
+Internal Frontier clothing storefront with live chat, WhatsApp enquiries, customer checkout, a staff back office, and optional Paynow Express Checkout.
 
-The storefront (`backend/public/index.html`) is served by the backend on `http://localhost:3000`. Customers can filter and search the collection, select sizes, save pieces to an enquiry bag, and send their selection to the shop on WhatsApp. This is an enquiry checkout rather than online payment processing.
+The storefront (`backend/public/index.html`) is served by the backend on `http://localhost:3000`. Customers can filter and search the collection, select sizes, and either send an enquiry through WhatsApp or check out on the site. Online EcoCash and InnBucks payments are optional and only appear when Paynow is configured.
 
 ## Backend
 
@@ -21,7 +21,7 @@ npm start
 
 That setting lasts only for the current terminal session. For Vercel, set the project Root Directory to `backend`, choose the Express preset, add `AI_GATEWAY_API_KEY` under Project Settings > Environment Variables for the environments you use, and redeploy. The Express app in `backend/server.js` handles `/api/chat`. You can optionally set `AI_GATEWAY_MODEL`; the default is `openai/gpt-4o-mini`.
 
-The bag and WhatsApp checkout run in the browser and need no backend database. The checkout opens WhatsApp with the selected products and sizes; pricing and payment are confirmed by the shop there.
+The enquiry bag and WhatsApp flow run in the browser and do not need the backend database. Customers can also check out on the site; cash and bank-transfer orders are confirmed by staff, while EcoCash and InnBucks can be processed automatically when Paynow is configured.
 
 Do not put the key in `index.html` or commit it to source control. The key pasted into chat should be revoked and replaced in Vercel. The older OpenAI key previously embedded in the page should also be revoked.
 
@@ -67,7 +67,7 @@ On Vercel, remember the project Root Directory is `backend` and the preset is Ex
 
 Product photos can be chosen straight from a device in the back office. The browser shrinks the photo, it is stored in the `media` table, and it is served from `/api/media/<id>` with long-lived caching.
 
-Customers can also check out on the site: the bag shows prices and a total when prices are set, and "Check out on the site" collects their details, delivery area and payment method (EcoCash, cash on delivery or bank transfer). The order lands in the back office as a new order with a unique reference and the chosen method, stock is reserved immediately, and payment is confirmed by the shop on WhatsApp and recorded in the back office. Pieces without a price stay on "price on request" and continue through the WhatsApp enquiry flow.
+Customers can also check out on the site: the bag shows prices and a total when prices are set, and "Check out on the site" collects their details, delivery area and payment method (EcoCash, InnBucks, cash on delivery or bank transfer). The order lands in the back office as a new order with a unique reference and the chosen method, and stock is reserved immediately. Manual payments are recorded by staff; configured Paynow payments are confirmed automatically. Pieces without a price stay on "price on request" and continue through the WhatsApp enquiry flow.
 
 ### Automated EcoCash and InnBucks payments (Paynow)
 
@@ -76,7 +76,7 @@ Set these environment variables to switch on automatic mobile money payments:
 * `PAYNOW_INTEGRATION_ID` and `PAYNOW_INTEGRATION_KEY`: from Paynow, under "Sell or Receive" then "Receive Payment Links". The receive payment link must be configured to include EcoCash and InnBucks, in USD.
 * `PAYNOW_URL`: never set this in production. (Testing override only.)
 
-When it is on, choosing EcoCash at checkout sends a PIN prompt to the customer's phone; InnBucks gives them an authorization code to approve in the InnBucks app. The storefront polls for approval, Paynow posts the final result to `/api/payments/paynow/callback` (hash-verified), and the order is marked paid automatically with the payment recorded in the audit trail. Webhooks are idempotent, and a tampered one is rejected. Without these variables the shop stays on the manual WhatsApp flow.
+When it is on, choosing EcoCash at checkout sends a PIN prompt to the customer's phone; InnBucks gives them an authorization code to approve in the InnBucks app. The storefront polls for approval, Paynow posts the final result to `/api/payments/paynow/callback` (signature required), and the order is marked paid only when the signed amount matches the order total. Webhooks are idempotent, and unsigned or tampered messages are rejected. Without these variables the shop stays on the manual WhatsApp flow.
 
 Every order has a printable receipt at `/receipt/<reference>` with a private token link, shown to the customer after checkout and available from the back office order detail.
 

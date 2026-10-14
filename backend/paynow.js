@@ -15,7 +15,7 @@ const MOBILE_METHODS = ["ecocash", "innbucks"];
 const METHOD_LABELS = { ecocash: "EcoCash", innbucks: "InnBucks" };
 
 function isConfigured() {
-  return Boolean(process.env.PAYNOW_INTEGRATION_ID && process.env.PAYNOW_INTEGRATION_KEY);
+  return Boolean(integrationId() && integrationKey());
 }
 
 function baseUrl() {
@@ -49,15 +49,36 @@ function parseUrlEncoded(text) {
 
 // Verifies an inbound message from Paynow.
 function verifyInbound(pairs) {
-  const hashPair = pairs.find((pair) => pair.key === "hash");
-  if (!hashPair) {
-    // Paynow's sandbox occasionally omits the hash on mobile requests.
-    // Accept but flag it so production issues are visible in the logs.
-    console.warn("Paynow response arrived without a hash; accepting without verification.");
-    return true;
+  const key = integrationKey();
+  if (!key.trim() || !Array.isArray(pairs)) return false;
+
+  const hashPairs = pairs.filter((pair) => String(pair.key || "").toLowerCase() === "hash");
+  if (hashPairs.length !== 1) return false;
+
+  const suppliedHash = String(hashPairs[0].value || "");
+  if (!/^[a-f0-9]{128}$/i.test(suppliedHash)) return false;
+
+  const values = pairs
+    .filter((pair) => String(pair.key || "").toLowerCase() !== "hash")
+    .map((pair) => pair.value);
+  const expectedHash = hashValues(values, key);
+  const suppliedBytes = Buffer.from(suppliedHash, "hex");
+  const expectedBytes = Buffer.from(expectedHash, "hex");
+  return suppliedBytes.length === expectedBytes.length && crypto.timingSafeEqual(suppliedBytes, expectedBytes);
+}
+
+function amountMatches(actual, expected) {
+  function toCents(value) {
+    if (typeof value !== "number" && typeof value !== "string") return null;
+    const match = String(value).trim().match(/^(\d+)(?:\.(\d{1,2}))?$/);
+    if (!match) return null;
+    const cents = Number(match[1]) * 100 + Number((match[2] || "").padEnd(2, "0"));
+    return Number.isSafeInteger(cents) ? cents : null;
   }
-  const values = pairs.filter((pair) => pair.key !== "hash").map((pair) => pair.value);
-  return hashPair.value.toUpperCase() === hashValues(values, integrationKey());
+
+  const actualCents = toCents(actual);
+  const expectedCents = toCents(expected);
+  return actualCents !== null && actualCents > 0 && actualCents === expectedCents;
 }
 
 async function postForm(url, fields) {
@@ -126,9 +147,9 @@ async function pollStatus(pollUrl) {
 // Maps Paynow's status text onto our simple payment states.
 function normalizeStatus(status) {
   const value = String(status || "").toLowerCase();
-  if (value === "paid" || value === "awaiting redirect") return "paid";
+  if (value === "paid" || value === "awaiting delivery" || value === "delivered") return "paid";
   if (value === "cancelled") return "cancelled";
-  return "pending"; // awaiting delivery, delivered, created, etc.
+  return "pending"; // awaiting redirect, created, sent, and other incomplete states
 }
 
 // Turns any Zimbabwean number format into the local 07xxxxxxxx form
@@ -155,5 +176,6 @@ module.exports = {
   normalisePhone,
   hashValues,
   verifyInbound,
+  amountMatches,
   integrationKey
 };
