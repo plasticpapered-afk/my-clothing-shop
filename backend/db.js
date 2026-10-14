@@ -6,10 +6,28 @@ const { Pool } = require("pg");
 
 let pool = null;
 
+// Hosted databases (like Neon) add "sslmode=..." to the address. The database
+// driver prints a security warning about it, and we already switch on a
+// verified secure connection through DATABASE_SSL, so we drop it from the
+// address. Security stays exactly the same.
+function cleanConnectionString(value) {
+  if (!value) return value;
+  try {
+    const url = new URL(value);
+    if (process.env.DATABASE_SSL === "true") {
+      url.searchParams.delete("sslmode");
+      url.searchParams.delete("channel_binding");
+    }
+    return url.toString();
+  } catch (_) {
+    return value;
+  }
+}
+
 function getPool() {
   if (!pool) {
     pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
+      connectionString: cleanConnectionString(process.env.DATABASE_URL),
       ssl: process.env.DATABASE_SSL === "true" ? { rejectUnauthorized: true } : false,
       max: 5,
       idleTimeoutMillis: 30000,
