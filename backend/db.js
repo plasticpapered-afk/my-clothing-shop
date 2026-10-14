@@ -168,6 +168,9 @@ CREATE TABLE IF NOT EXISTS media (
 );
 
 ALTER TABLE orders ADD COLUMN IF NOT EXISTS payment_method text NOT NULL DEFAULT '';
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS paynow_pollurl text NOT NULL DEFAULT '';
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS paynow_reference text NOT NULL DEFAULT '';
+ALTER TABLE orders ADD COLUMN IF NOT EXISTS paynow_status text NOT NULL DEFAULT '';
 
 CREATE INDEX IF NOT EXISTS order_items_order_id_idx ON order_items (order_id);
 CREATE INDEX IF NOT EXISTS payments_order_id_idx ON payments (order_id);

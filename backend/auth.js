@@ -80,7 +80,17 @@ function validPassword(password) {
   return typeof password === "string" && password.length >= 8 && password.length <= 100;
 }
 
+// A short private token so receipts can only be opened with their link.
+function receiptToken(reference) {
+  return crypto
+    .createHmac("sha256", SECRET)
+    .update(`receipt:${reference}`)
+    .digest("hex")
+    .slice(0, 16);
+}
+
 module.exports = {
+  receiptToken,
   createToken,
   setAuthCookie,
   clearAuthCookie,

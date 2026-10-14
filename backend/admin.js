@@ -5,6 +5,8 @@
 const express = require("express");
 const path = require("path");
 const db = require("./db");
+const paynow = require("./paynow");
+const { receiptToken } = require("./auth");
 const {
   createToken,
   setAuthCookie,
@@ -27,7 +29,7 @@ const NEXT_STATUS = {
   delivered: [],
   cancelled: ["new"]
 };
-const PAYMENT_METHODS = ["ecocash", "cash", "bank_transfer", "other"];
+const PAYMENT_METHODS = ["ecocash", "innbucks", "cash", "bank_transfer", "other"];
 
 function bad(res, message) {
   return res.status(400).json({ ok: false, error: message });
@@ -96,6 +98,52 @@ function requireAdmin(req, res, next) {
     return res.status(403).json({ ok: false, error: "Only an administrator can do that." });
   }
   next();
+}
+
+function requestBaseUrl(req) {
+  const host = String(req.headers.host || "");
+  const local = host.startsWith("127.0.0.1") || host.startsWith("localhost");
+  return `${local ? "http" : "https"}://${host}`;
+}
+
+// Applies a status update from Paynow (webhook or manual poll) to an order.
+// Fully idempotent: recording the same paid status twice never double-counts.
+async function applyPaynowUpdate(reference, update) {
+  const found = await db.query("SELECT * FROM orders WHERE reference = $1", [String(reference || "")]);
+  const order = found.rows[0];
+  if (!order) return { ok: false, error: "Order not found." };
+  const state = paynow.normalizeStatus(update.status);
+
+  if (state === "paid") {
+    await db.withTransaction(async (client) => {
+      const paymentRef = update.paynowreference || "PAYNOW";
+      const existing = await client.query(
+        "SELECT id FROM payments WHERE order_id = $1 AND reference = $2",
+        [order.id, paymentRef]
+      );
+      if (existing.rows.length === 0) {
+        await client.query(
+          "INSERT INTO payments (order_id, method, reference, amount, recorded_by) VALUES ($1, $2, $3, $4, NULL)",
+          [order.id, order.payment_method || "other", paymentRef, order.total]
+        );
+      }
+      await client.query(
+        "UPDATE orders SET payment_status = 'paid', paynow_reference = $1, paynow_status = $2, updated_at = now() WHERE id = $3",
+        [update.paynowreference || order.paynow_reference, update.status, order.id]
+      );
+      await client.query("INSERT INTO audit_log (staff_id, action, details) VALUES (NULL, $1, $2)", [
+        "paynow_update",
+        `order ${order.reference}: online payment confirmed (${update.status})`
+      ]);
+    });
+    return { ok: true, state: "paid" };
+  }
+
+  await db.query(
+    "UPDATE orders SET paynow_reference = $1, paynow_status = $2, updated_at = now() WHERE id = $3",
+    [update.paynowreference || order.paynow_reference, update.status, order.id]
+  );
+  return { ok: true, state };
 }
 
 function staffView(staff) {
@@ -748,6 +796,12 @@ router.post("/api/checkout", requireDatabase, async (req, res) => {
   if (phone.replace(/\D/g, "").length < 6) return bad(res, "Please enter a valid phone number.");
   if (items.length === 0) return bad(res, "Your bag is empty.");
 
+  const wantsOnlinePayment = paynow.MOBILE_METHODS.includes(method);
+  const mobilePhone = wantsOnlinePayment ? paynow.normalisePhone(text(body.mobile_phone) || phone) : null;
+  if (wantsOnlinePayment && paynow.isConfigured() && !mobilePhone) {
+    return bad(res, "Enter the EcoCash / InnBucks number to charge, like 0771234567.");
+  }
+
   try {
     const created = await db.withTransaction(async (client) => {
       const byPhone = await client.query("SELECT id, name FROM customers WHERE phone = $1", [phone]);
@@ -821,11 +875,116 @@ router.post("/api/checkout", requireDatabase, async (req, res) => {
       return order.rows[0];
     });
 
-    res.json({ ok: true, order: { reference: created.reference, total: Number(created.total), payment_method: created.payment_method } });
+    // EcoCash / InnBucks: start the online payment now so the customer gets
+    // the PIN prompt (EcoCash) or authorization code (InnBucks) immediately.
+    let paynowResult = null;
+    if (wantsOnlinePayment && paynow.isConfigured()) {
+      try {
+        const baseUrl = requestBaseUrl(req);
+        const receiptUrl = `${baseUrl}/receipt/${created.reference}?t=${receiptToken(created.reference)}`;
+        const initiated = await paynow.initiateExpress({
+          reference: created.reference,
+          amount: Number(created.total),
+          description: `Internal Frontier order ${created.reference}`,
+          phone: mobilePhone,
+          method,
+          resultUrl: `${baseUrl}/api/payments/paynow/callback`,
+          returnUrl: receiptUrl
+        });
+        await db.query(
+          "UPDATE orders SET paynow_pollurl = $1, paynow_status = $2 WHERE id = $3",
+          [initiated.pollurl, "Initiated", created.id]
+        );
+        paynowResult = {
+          started: true,
+          method,
+          phone: mobilePhone,
+          instructions: initiated.instructions,
+          authorizationcode: initiated.authorizationcode,
+          authorizationexpires: initiated.authorizationexpires
+        };
+      } catch (error) {
+        console.error("Paynow initiate failed:", error.message);
+        paynowResult = { started: false, error: error.message };
+      }
+    }
+
+    res.json({
+      ok: true,
+      order: {
+        reference: created.reference,
+        total: Number(created.total),
+        payment_method: created.payment_method
+      },
+      paynow: paynowResult,
+      receipt_url: `/receipt/${created.reference}?t=${receiptToken(created.reference)}`
+    });
   } catch (error) {
     if (error.status) return bad(res, error.message);
     throw error;
   }
+});
+
+// ---------- Paynow callbacks ----------
+
+// The storefront asks "has the customer approved the payment yet?"
+// We poll Paynow and apply the answer. The customer only sees their own
+// order's payment state, nothing else.
+router.post("/api/payments/paynow/status", requireDatabase, async (req, res) => {
+  const reference = text(req.body && req.body.reference);
+  const found = await db.query("SELECT * FROM orders WHERE reference = $1", [reference]);
+  const order = found.rows[0];
+  if (!order) return bad(res, "Order not found.");
+  if (!order.paynow_pollurl) {
+    return res.json({ ok: true, status: order.payment_status });
+  }
+  try {
+    const update = await paynow.pollStatus(order.paynow_pollurl);
+    const applied = await applyPaynowUpdate(order.reference, update);
+    if (!applied.ok) return bad(res, applied.error);
+    const fresh = await db.query("SELECT payment_status, paynow_status FROM orders WHERE id = $1", [order.id]);
+    res.json({
+      ok: true,
+      status: fresh.rows[0].payment_status,
+      paynow_status: fresh.rows[0].paynow_status
+    });
+  } catch (error) {
+    // A poll failure is not fatal - the customer can try again.
+    res.json({ ok: true, status: order.payment_status, error: error.message });
+  }
+});
+
+// Paynow posts the final payment result here automatically. The message is
+// signed with our integration key, so we verify before trusting it.
+router.post("/api/payments/paynow/callback", requireDatabase, async (req, res) => {
+  try {
+    const pairs = Object.entries(req.body || {}).map(([key, value]) => ({ key: key.toLowerCase(), value: String(value) }));
+    if (!paynow.verifyInbound(pairs)) {
+      console.warn("Rejected a Paynow callback with a bad hash.");
+      return res.status(400).send("Invalid hash");
+    }
+    const reference = String((req.body && req.body.reference) || "");
+    const status = String((req.body && req.body.status) || "");
+    const paynowreference = String((req.body && req.body.paynowreference) || "");
+    if (reference) {
+      await applyPaynowUpdate(reference, { status, paynowreference });
+    }
+    res.status(200).send("OK");
+  } catch (error) {
+    console.error("Paynow callback error:", error.message);
+    res.status(500).send("Error");
+  }
+});
+
+// ---------- Receipts ----------
+
+// Staff can open a customer's receipt from the order detail page.
+router.get("/api/admin/orders/:id/receipt-url", requireDatabase, requireStaff, async (req, res) => {
+  const id = int(req.params.id);
+  const found = await db.query("SELECT reference FROM orders WHERE id = $1", [id]);
+  if (!found.rows[0]) return bad(res, "Order not found.");
+  const reference = found.rows[0].reference;
+  res.json({ ok: true, url: `/receipt/${reference}?t=${receiptToken(reference)}` });
 });
 
 // ---------- Audit trail ----------

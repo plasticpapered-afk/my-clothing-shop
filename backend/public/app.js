@@ -328,6 +328,7 @@
     document.body.append(checkoutOverlay);
 
     function closeCheckout() {
+      stopPaymentPolling();
       checkoutOverlay.hidden = true;
       checkoutOverlay.textContent = "";
     }
@@ -358,13 +359,25 @@
           <label class="checkout-field"><span>Delivery area (optional)</span><input name="location" maxlength="120" placeholder="e.g. Avondale, Harare"></label>
           <p class="checkout-field" style="margin-bottom:8px"><span>How would you like to pay?</span></p>
           <div class="payment-choices">
-            <label class="payment-choice"><input type="radio" name="payment_method" value="ecocash" checked><span><strong>EcoCash</strong><small>Payment steps sent on WhatsApp</small></span></label>
+            <label class="payment-choice"><input type="radio" name="payment_method" value="ecocash" checked><span><strong>EcoCash</strong><small>Approve with your PIN on your phone</small></span></label>
+            <label class="payment-choice"><input type="radio" name="payment_method" value="innbucks"><span><strong>InnBucks</strong><small>Approve with a code in the InnBucks app</small></span></label>
             <label class="payment-choice"><input type="radio" name="payment_method" value="cash"><span><strong>Cash on delivery</strong><small>Pay when your order arrives</small></span></label>
             <label class="payment-choice"><input type="radio" name="payment_method" value="bank_transfer"><span><strong>Bank transfer</strong><small>Account details sent on WhatsApp</small></span></label>
           </div>
+          <label class="checkout-field" id="mobile-money-field" hidden><span>EcoCash / InnBucks number to charge</span><input name="mobile_phone" maxlength="20" inputmode="tel" placeholder="e.g. 0771234567"></label>
           <button class="checkout-primary" type="submit">Place order</button>
           <button class="checkout-secondary" type="button" id="checkout-cancel">Back to the shop</button>
         </form>`;
+      const mobileField = card.querySelector("#mobile-money-field");
+      const updateMobileField = () => {
+        const chosen = form && form.elements.payment_method ? form.elements.payment_method.value : "ecocash";
+        mobileField.hidden = !(chosen === "ecocash" || chosen === "innbucks");
+      };
+      const form = card.querySelector("#checkout-form");
+      [...form.querySelectorAll("input[name=payment_method]")].forEach((radio) => {
+        radio.addEventListener("change", updateMobileField);
+      });
+      updateMobileField();
       checkoutOverlay.append(card);
       card.querySelector("#checkout-close").addEventListener("click", closeCheckout);
       card.querySelector("#checkout-cancel").addEventListener("click", closeCheckout);
@@ -385,6 +398,7 @@
               phone: form.elements.phone.value.trim(),
               location: form.elements.location.value.trim(),
               payment_method: form.elements.payment_method.value,
+              mobile_phone: form.elements.mobile_phone ? form.elements.mobile_phone.value.trim() : "",
               items: inquiryBag.map((item) => ({ variant_id: item.variantId, quantity: 1 }))
             })
           });
@@ -392,7 +406,7 @@
           if (!response.ok || !data || data.ok !== true) {
             throw new Error((data && data.error) || "Checkout is not available right now.");
           }
-          renderCheckoutSuccess(data.order);
+          renderCheckoutSuccess(data.order, data.paynow, data.receipt_url);
           inquiryBag = [];
           saveBag();
           setDrawerOpen(false);
@@ -405,25 +419,118 @@
       });
     }
 
-    function renderCheckoutSuccess(order) {
-      const methodNames = { ecocash: "EcoCash", cash: "cash on delivery", bank_transfer: "bank transfer", other: "your chosen method" };
+    let paymentPollTimer = null;
+
+    function stopPaymentPolling() {
+      if (paymentPollTimer) {
+        window.clearInterval(paymentPollTimer);
+        paymentPollTimer = null;
+      }
+    }
+
+    function renderCheckoutSuccess(order, paynow, receiptUrl) {
+      stopPaymentPolling();
+      const methodNames = { ecocash: "EcoCash", innbucks: "InnBucks", cash: "cash on delivery", bank_transfer: "bank transfer", other: "your chosen method" };
       const methodName = methodNames[order.payment_method] || "your chosen method";
-      const message = `Hi Internal Frontier, I just placed order ${order.reference} ($${order.total.toFixed(2)}). I chose ${methodName}.`;
+      const onlineStarted = paynow && paynow.started;
       checkoutOverlay.textContent = "";
       const card = document.createElement("div");
       card.className = "checkout-card";
-      card.innerHTML = `
+
+      const base = `
         <button class="checkout-close" id="checkout-close" type="button" aria-label="Close checkout">×</button>
-        <h2>Order placed</h2>
+        <h2>${onlineStarted ? "Approve the payment" : "Order placed"}</h2>
         <p class="checkout-sub">Keep this reference. It is your proof of the order.</p>
         <p class="checkout-success-ref">${order.reference}</p>
-        <p class="checkout-summary">Total <strong>$${order.total.toFixed(2)}</strong> · paying by <strong>${methodName}</strong></p>
-        <p class="checkout-sub">Tap below to confirm with us on WhatsApp and we'll send ${order.payment_method === "ecocash" ? "the EcoCash payment steps" : "payment and delivery details"} right away.</p>
+        <p class="checkout-summary">Total <strong>$${order.total.toFixed(2)}</strong> · paying by <strong>${methodName}</strong></p>`;
+
+      if (onlineStarted && order.payment_method === "ecocash") {
+        card.innerHTML = `${base}
+          <p class="checkout-sub">Check your phone now. EcoCash will ask you to enter your PIN to approve <strong>$${order.total.toFixed(2)}</strong>${paynow.phone ? ` on ${paynow.phone}` : ""}. Leave this page open.</p>
+          <p class="checkout-summary" id="payment-status">⏳ Waiting for your approval...</p>
+          ${receiptUrl ? `<a class="checkout-secondary" href="${receiptUrl}">View receipt</a>` : ""}
+          <button class="checkout-secondary" type="button" id="checkout-done">I'll confirm later</button>`;
+        checkoutOverlay.append(card);
+        card.querySelector("#checkout-close").addEventListener("click", closeCheckout);
+        card.querySelector("#checkout-done").addEventListener("click", closeCheckout);
+        startPaymentPolling(order, card, receiptUrl);
+        return;
+      }
+
+      if (onlineStarted && order.payment_method === "innbucks") {
+        card.innerHTML = `${base}
+          <p class="checkout-sub">Open the InnBucks app and approve the payment using this code, or tap the button below.</p>
+          <p class="checkout-success-ref">${paynow.authorizationcode || ""}</p>
+          ${paynow.authorizationexpires ? `<p class="checkout-sub">This code expires ${paynow.authorizationexpires}.</p>` : ""}
+          ${paynow.authorizationcode ? `<a class="checkout-primary" style="text-decoration:none" href="com.innbucks.customer://purchase?paymentToken=${paynow.authorizationcode}">Open in InnBucks app</a>` : ""}
+          <p class="checkout-summary" id="payment-status">⏳ Waiting for your approval...</p>
+          ${receiptUrl ? `<a class="checkout-secondary" href="${receiptUrl}">View receipt</a>` : ""}
+          <button class="checkout-secondary" type="button" id="checkout-done">I'll confirm later</button>`;
+        checkoutOverlay.append(card);
+        card.querySelector("#checkout-close").addEventListener("click", closeCheckout);
+        card.querySelector("#checkout-done").addEventListener("click", closeCheckout);
+        startPaymentPolling(order, card, receiptUrl);
+        return;
+      }
+
+      const note = paynow && paynow.started === false
+        ? "We could not start the online payment automatically. Please confirm with us on WhatsApp and we'll sort it out."
+        : `We'll confirm your order on WhatsApp with ${order.payment_method === "bank_transfer" ? "our bank details" : "payment and delivery details"}.`;
+      const message = `Hi Internal Frontier, I just placed order ${order.reference} ($${order.total.toFixed(2)}). I chose ${methodName}.`;
+      card.innerHTML = `${base}
+        <p class="checkout-sub">${note}</p>
         <a class="checkout-primary" style="text-decoration:none" href="https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}" target="_blank" rel="noopener noreferrer">Confirm on WhatsApp</a>
+        ${receiptUrl ? `<a class="checkout-secondary" href="${receiptUrl}">View receipt</a>` : ""}
         <button class="checkout-secondary" type="button" id="checkout-done">Done</button>`;
       checkoutOverlay.append(card);
       card.querySelector("#checkout-close").addEventListener("click", closeCheckout);
       card.querySelector("#checkout-done").addEventListener("click", closeCheckout);
+    }
+
+    // Asks our site every few seconds whether Paynow has confirmed the
+    // customer's payment, and updates the screen the moment it lands.
+    function startPaymentPolling(order, card, receiptUrl) {
+      let attempts = 0;
+      const statusLine = card.querySelector("#payment-status");
+      paymentPollTimer = window.setInterval(async () => {
+        attempts += 1;
+        if (attempts > 40) {
+          stopPaymentPolling();
+          if (statusLine) statusLine.textContent = "Still waiting on Paynow. Your order is safe - it will update automatically.";
+          return;
+        }
+        try {
+          const response = await fetch("/api/payments/paynow/status", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ reference: order.reference })
+          });
+          const data = await response.json();
+          if (!response.ok || !data || data.ok !== true) return;
+          if (data.status === "paid") {
+            stopPaymentPolling();
+            const message = `Hi Internal Frontier, I paid for order ${order.reference} online. Please confirm you received it.`;
+            card.innerHTML = `
+              <button class="checkout-close" id="checkout-close" type="button" aria-label="Close checkout">×</button>
+              <h2>Payment received 🎉</h2>
+              <p class="checkout-sub">Thank you! Your payment for ${order.reference} went through.</p>
+              <p class="checkout-success-ref">${order.reference}</p>
+              <p class="checkout-summary">Total <strong>$${order.total.toFixed(2)}</strong> · <strong>PAID</strong></p>
+              ${receiptUrl ? `<a class="checkout-primary" style="text-decoration:none" href="${receiptUrl}">View receipt</a>` : ""}
+              <a class="checkout-secondary" href="https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}" target="_blank" rel="noopener noreferrer">Message us on WhatsApp</a>
+              <button class="checkout-secondary" type="button" id="checkout-done">Done</button>`;
+            card.querySelector("#checkout-close").addEventListener("click", closeCheckout);
+            card.querySelector("#checkout-done").addEventListener("click", closeCheckout);
+          } else if (data.status === "cancelled") {
+            stopPaymentPolling();
+            if (statusLine) statusLine.textContent = "This payment was cancelled. If that is a surprise, message us on WhatsApp.";
+          } else if (statusLine) {
+            statusLine.textContent = "⏳ Waiting for your approval...";
+          }
+        } catch (error) {
+          // keep waiting; a network blip is not the customer's problem
+        }
+      }, 4500);
     }
 
     try {

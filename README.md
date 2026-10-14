@@ -68,3 +68,14 @@ On Vercel, remember the project Root Directory is `backend` and the preset is Ex
 Product photos can be chosen straight from a device in the back office. The browser shrinks the photo, it is stored in the `media` table, and it is served from `/api/media/<id>` with long-lived caching.
 
 Customers can also check out on the site: the bag shows prices and a total when prices are set, and "Check out on the site" collects their details, delivery area and payment method (EcoCash, cash on delivery or bank transfer). The order lands in the back office as a new order with a unique reference and the chosen method, stock is reserved immediately, and payment is confirmed by the shop on WhatsApp and recorded in the back office. Pieces without a price stay on "price on request" and continue through the WhatsApp enquiry flow.
+
+### Automated EcoCash and InnBucks payments (Paynow)
+
+Set these environment variables to switch on automatic mobile money payments:
+
+* `PAYNOW_INTEGRATION_ID` and `PAYNOW_INTEGRATION_KEY`: from Paynow, under "Sell or Receive" then "Receive Payment Links". The receive payment link must be configured to include EcoCash and InnBucks, in USD.
+* `PAYNOW_URL`: never set this in production. (Testing override only.)
+
+When it is on, choosing EcoCash at checkout sends a PIN prompt to the customer's phone; InnBucks gives them an authorization code to approve in the InnBucks app. The storefront polls for approval, Paynow posts the final result to `/api/payments/paynow/callback` (hash-verified), and the order is marked paid automatically with the payment recorded in the audit trail. Webhooks are idempotent, and a tampered one is rejected. Without these variables the shop stays on the manual WhatsApp flow.
+
+Every order has a printable receipt at `/receipt/<reference>` with a private token link, shown to the customer after checkout and available from the back office order detail.

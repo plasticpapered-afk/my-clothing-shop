@@ -32,7 +32,7 @@ const STATUS_ACTIONS = {
   delivered: [],
   cancelled: [["new", "Reopen"]]
 };
-const METHOD_LABELS = { ecocash: "EcoCash", cash: "Cash", bank_transfer: "Bank transfer", other: "Other" };
+const METHOD_LABELS = { ecocash: "EcoCash", innbucks: "InnBucks", cash: "Cash", bank_transfer: "Bank transfer", other: "Other" };
 const SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
 
 function escapeHtml(value) {
@@ -608,12 +608,14 @@ async function renderOrderDetail(id) {
         <h3 class="panel-title">Customer</h3>
         <p><strong>${escapeHtml(order.customer_name)}</strong><br>${escapeHtml(order.customer_phone)}</p>
         ${order.payment_method ? `<p class="small"><strong>Customer chose:</strong> ${METHOD_LABELS[order.payment_method] || escapeHtml(order.payment_method)}</p>` : ""}
+        ${order.paynow_status ? `<p class="small muted"><strong>Online payment status:</strong> ${escapeHtml(order.paynow_status)}</p>` : ""}
+        <p><button class="btn small ghost" id="open-receipt">Open receipt</button></p>
         ${order.notes ? `<p class="small muted">${escapeHtml(order.notes)}</p>` : ""}
         <p class="small muted">Created ${fmtDate(order.created_at)}</p>
         <h3 class="panel-title" style="margin-top:20px">Payments received</h3>
         ${order.payments.length === 0 ? `<p class="muted small mt0">No payments recorded yet.</p>` : `
           <ul class="inline-list">${order.payments.map((payment) => `
-            <li><span>${METHOD_LABELS[payment.method] || escapeHtml(payment.method)}${payment.reference ? ` · ${escapeHtml(payment.reference)}` : ""}<br><span class="muted small">${fmtDate(payment.created_at)}${payment.recorded_by_name ? " by " + escapeHtml(payment.recorded_by_name) : ""}</span></span><strong>${money(payment.amount)}</strong></li>`).join("")}</ul>`}
+            <li><span>${METHOD_LABELS[payment.method] || escapeHtml(payment.method)}${payment.reference ? ` · ${escapeHtml(payment.reference)}` : ""}<br><span class="muted small">${fmtDate(payment.created_at)}${payment.recorded_by_name ? " by " + escapeHtml(payment.recorded_by_name) : " · automatic (Paynow)"}</span></span><strong>${money(payment.amount)}</strong></li>`).join("")}</ul>`}
         <form id="payment-form" style="margin-top:16px">
           <div class="field-row">
             <label class="field" style="margin:0"><span>Method</span>
@@ -644,6 +646,12 @@ async function renderOrderDetail(id) {
         await renderOrderDetail(order.id);
       } catch (error) { formError(view, error.message); }
     });
+  });
+  view.querySelector("#open-receipt").addEventListener("click", async () => {
+    try {
+      const data = await api(`/api/admin/orders/${order.id}/receipt-url`);
+      window.open(data.url, "_blank", "noopener");
+    } catch (error) { showToast(error.message); }
   });
   view.querySelector("#payment-form").addEventListener("submit", async (event) => {
     event.preventDefault();
