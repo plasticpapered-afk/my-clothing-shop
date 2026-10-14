@@ -107,11 +107,10 @@ test("matches only equal, positive amounts to the cent", () => {
   assert.equal(paynow.amountMatches("33.001", 33), false);
 });
 
-test("only treats completed Paynow statuses as paid", () => {
-  for (const status of ["Paid", "Awaiting Delivery", "Delivered"]) {
-    assert.equal(paynow.normalizeStatus(status), "paid");
-  }
-  for (const status of ["Awaiting Redirect", "Created", "Sent"]) {
+test("only treats Paynow's Paid status as paid", () => {
+  assert.equal(paynow.normalizeStatus("Paid"), "paid");
+  // The prompt being sent or reaching the phone is NOT payment.
+  for (const status of ["Awaiting Delivery", "Delivered", "Awaiting Redirect", "Created", "Sent"]) {
     assert.equal(paynow.normalizeStatus(status), "pending");
   }
   assert.equal(paynow.normalizeStatus("Cancelled"), "cancelled");

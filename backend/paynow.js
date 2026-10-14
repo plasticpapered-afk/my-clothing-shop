@@ -147,9 +147,13 @@ async function pollStatus(pollUrl) {
 // Maps Paynow's status text onto our simple payment states.
 function normalizeStatus(status) {
   const value = String(status || "").toLowerCase();
-  if (value === "paid" || value === "awaiting delivery" || value === "delivered") return "paid";
+  // Only "Paid" means the money has actually arrived. "Awaiting Delivery"
+  // means Paynow is sending the PIN prompt to the customer's phone, and
+  // "Delivered" means the prompt reached the phone - the customer may not
+  // have entered their PIN at all, so these must stay "pending".
+  if (value === "paid") return "paid";
   if (value === "cancelled") return "cancelled";
-  return "pending"; // awaiting redirect, created, sent, and other incomplete states
+  return "pending"; // awaiting delivery, delivered, created, sent, etc.
 }
 
 // Turns any Zimbabwean number format into the local 07xxxxxxxx form
