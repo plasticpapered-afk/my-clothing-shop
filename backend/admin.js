@@ -115,8 +115,18 @@ async function applyPaynowUpdate(reference, update) {
   const state = paynow.normalizeStatus(update.status);
 
   if (state === "paid") {
+    if (!paynow.MOBILE_METHODS.includes(order.payment_method)) {
+      return { ok: false, error: "This order is not a Paynow mobile-money order." };
+    }
+    if (!paynow.amountMatches(update.amount, order.total)) {
+      return { ok: false, error: "Paynow's confirmed amount does not match the order total." };
+    }
+    const paymentRef = String(update.paynowreference || "").trim();
+    if (!paymentRef) {
+      return { ok: false, error: "Paynow's confirmation is missing its transaction reference." };
+    }
+
     await db.withTransaction(async (client) => {
-      const paymentRef = update.paynowreference || "PAYNOW";
       const existing = await client.query(
         "SELECT id FROM payments WHERE order_id = $1 AND reference = $2",
         [order.id, paymentRef]
@@ -1028,6 +1038,10 @@ router.post("/api/payments/paynow/retry", requireDatabase, async (req, res) => {
 // Paynow posts the final payment result here automatically. The message is
 // signed with our integration key, so we verify before trusting it.
 router.post("/api/payments/paynow/callback", requireDatabase, async (req, res) => {
+  if (!paynow.isConfigured()) {
+    return res.status(503).send("Paynow is not configured");
+  }
+
   try {
     const pairs = Object.entries(req.body || {}).map(([key, value]) => ({ key: key.toLowerCase(), value: String(value) }));
     if (!paynow.verifyInbound(pairs)) {
@@ -1037,9 +1051,10 @@ router.post("/api/payments/paynow/callback", requireDatabase, async (req, res) =
     const reference = String((req.body && req.body.reference) || "");
     const status = String((req.body && req.body.status) || "");
     const paynowreference = String((req.body && req.body.paynowreference) || "");
-    if (reference) {
-      await applyPaynowUpdate(reference, { status, paynowreference });
-    }
+    const amount = String((req.body && req.body.amount) || "");
+    if (!reference || !status) return res.status(400).send("Missing payment reference or status");
+    const applied = await applyPaynowUpdate(reference, { status, amount, paynowreference });
+    if (!applied.ok) return res.status(400).send(applied.error);
     res.status(200).send("OK");
   } catch (error) {
     console.error("Paynow callback error:", error.message);
