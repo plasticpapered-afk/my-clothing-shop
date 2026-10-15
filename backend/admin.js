@@ -825,17 +825,24 @@ router.post("/api/checkout", requireDatabase, async (req, res) => {
   if (wantsOnlinePayment && paynow.isConfigured() && !mobilePhone) {
     return bad(res, "Enter the EcoCash / InnBucks number to charge, like 0771234567.");
   }
+  const authEmail = text(body.email);
+  if (wantsOnlinePayment && paynow.isConfigured() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(authEmail)) {
+    return bad(res, "Enter your email address. Paynow requires it for EcoCash / InnBucks payments.");
+  }
 
   try {
     const created = await db.withTransaction(async (client) => {
-      const byPhone = await client.query("SELECT id, name FROM customers WHERE phone = $1", [phone]);
+      const byPhone = await client.query("SELECT id, name, email FROM customers WHERE phone = $1", [phone]);
       let customerId;
       if (byPhone.rows[0]) {
         customerId = byPhone.rows[0].id;
+        if (authEmail && !byPhone.rows[0].email) {
+          await client.query("UPDATE customers SET email = $1 WHERE id = $2", [authEmail, customerId]);
+        }
       } else {
         const inserted = await client.query(
-          "INSERT INTO customers (name, phone) VALUES ($1, $2) RETURNING id",
-          [name, phone]
+          "INSERT INTO customers (name, phone, email) VALUES ($1, $2, $3) RETURNING id",
+          [name, phone, authEmail || null]
         );
         customerId = inserted.rows[0].id;
       }
@@ -910,6 +917,7 @@ router.post("/api/checkout", requireDatabase, async (req, res) => {
           reference: created.reference,
           amount: Number(created.total),
           description: `Internal Frontier order ${created.reference}`,
+          authEmail,
           phone: mobilePhone,
           method,
           resultUrl: `${baseUrl}/api/payments/paynow/callback`,
@@ -1014,6 +1022,14 @@ router.post("/api/payments/paynow/retry", requireDatabase, async (req, res) => {
 
   const phone = paynow.normalisePhone(order.paynow_phone) || paynow.normalisePhone(order.customer_phone);
   if (!phone) return bad(res, "This order has no valid mobile money number on file.");
+  const emailRow = await db.query(
+    "SELECT c.email FROM customers c WHERE c.id = $1",
+    [order.customer_id]
+  );
+  const authEmail = text(emailRow.rows[0] ? emailRow.rows[0].email : "");
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(authEmail)) {
+    return bad(res, "This order has no email address on file, which Paynow requires.");
+  }
 
   try {
     const baseUrl = requestBaseUrl(req);
@@ -1021,6 +1037,7 @@ router.post("/api/payments/paynow/retry", requireDatabase, async (req, res) => {
       reference: order.reference,
       amount: Number(order.total),
       description: `Internal Frontier order ${order.reference}`,
+      authEmail,
       phone,
       method: order.payment_method,
       resultUrl: `${baseUrl}/api/payments/paynow/callback`,

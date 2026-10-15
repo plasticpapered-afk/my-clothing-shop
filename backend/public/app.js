@@ -366,18 +366,21 @@
           </div>
           <label class="checkout-field" id="ecocash-number-field" hidden><span>Your EcoCash number (the one that gets the PIN prompt)</span><input name="ecocash_phone" maxlength="20" inputmode="tel" placeholder="e.g. 0771234567"></label>
           <label class="checkout-field" id="innbucks-number-field" hidden><span>Your InnBucks number (the wallet to pay from)</span><input name="innbucks_phone" maxlength="20" inputmode="tel" placeholder="e.g. 0771234567"></label>
+          <label class="checkout-field" id="payment-email-field" hidden><span>Your email address (required for EcoCash / InnBucks payments)</span><input name="payment_email" type="email" maxlength="120" placeholder="you@example.com"></label>
           <p class="checkout-error" id="availability-note" hidden></p>
           <button class="checkout-primary" type="submit">Place order</button>
           <button class="checkout-secondary" type="button" id="checkout-cancel">Back to the shop</button>
         </form>`;
       const ecocashField = card.querySelector("#ecocash-number-field");
       const innbucksField = card.querySelector("#innbucks-number-field");
+      const emailField = card.querySelector("#payment-email-field");
       const availabilityNote = card.querySelector("#availability-note");
       const form = card.querySelector("#checkout-form");
       const updateMobileField = () => {
         const chosen = form.elements.payment_method.value;
         ecocashField.hidden = chosen !== "ecocash";
         innbucksField.hidden = chosen !== "innbucks";
+        emailField.hidden = chosen !== "ecocash" && chosen !== "innbucks";
       };
       [...form.querySelectorAll("input[name=payment_method]")].forEach((radio) => {
         radio.addEventListener("change", updateMobileField);
@@ -422,6 +425,7 @@
               name: form.elements.name.value.trim(),
               phone: form.elements.phone.value.trim(),
               location: form.elements.location.value.trim(),
+          email: form.elements.payment_email ? form.elements.payment_email.value.trim() : "",
               payment_method: form.elements.payment_method.value,
               mobile_phone: form.elements.payment_method.value === "ecocash"
                 ? (form.elements.ecocash_phone ? form.elements.ecocash_phone.value.trim() : "")

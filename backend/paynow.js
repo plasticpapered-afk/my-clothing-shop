@@ -100,12 +100,16 @@ async function postForm(url, fields) {
 // Starts an Express Checkout (mobile money) transaction. For EcoCash the
 // customer gets a PIN prompt on their phone; for InnBucks they get an
 // authorization code to approve in the InnBucks app.
-async function initiateExpress({ reference, amount, description, phone, method, resultUrl, returnUrl }) {
+async function initiateExpress({ reference, amount, description, authEmail, phone, method, resultUrl, returnUrl }) {
+  if (!authEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(String(authEmail))) {
+    throw new Error("Enter a valid email address for the payment.");
+  }
   const fields = {
     id: integrationId(),
     reference: String(reference),
     amount: Number(amount).toFixed(2),
     additionalinfo: String(description),
+    authemail: String(authEmail),
     returnurl: String(returnUrl),
     resulturl: String(resultUrl),
     status: "Message",
