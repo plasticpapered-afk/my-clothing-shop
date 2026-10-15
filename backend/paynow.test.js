@@ -33,16 +33,21 @@ test("Paynow requires both configured credentials", () => {
   assert.equal(paynow.isConfigured(), true);
 });
 
-test("rejects a Paynow message with no hash", () => {
+test("treats an unsigned Paynow message as processable but untrusted", () => {
   setPaynowCredentials("integration-id", "integration-key");
-  assert.equal(paynow.verifyInbound([{ key: "status", value: "Paid" }]), false);
+  const verdict = paynow.verifyInbound([{ key: "status", value: "Paid" }]);
+  assert.equal(verdict.valid, true);
+  assert.equal(verdict.signed, false);
+  assert.equal(verdict.hasHash, false);
 });
 
 test("rejects a Paynow message when the integration key is missing", () => {
   setPaynowCredentials("integration-id", undefined);
-  const fields = [{ key: "status", value: "Paid" }];
-  fields.push({ key: "hash", value: paynow.hashValues(["Paid"], "") });
-  assert.equal(paynow.verifyInbound(fields), false);
+  assert.equal(paynow.verifyInbound([{ key: "status", value: "Paid" }]).valid, false);
+  const fields = [{ key: "status", value: "Paid" }, { key: "hash", value: paynow.hashValues(["Paid"], "") }];
+  const verdict = paynow.verifyInbound(fields);
+  assert.equal(verdict.valid, false);
+  assert.equal(verdict.hasHash, true);
 });
 
 test("accepts a correctly signed Paynow message and rejects a tampered one", () => {
@@ -57,20 +62,20 @@ test("accepts a correctly signed Paynow message and rejects a tampered one", () 
     ...fields,
     { key: "hash", value: paynow.hashValues(fields.map((field) => field.value), key) }
   ];
-  assert.equal(paynow.verifyInbound(signed), true);
+  assert.equal(paynow.verifyInbound(signed).signed, true);
   assert.equal(
     paynow.verifyInbound(signed.map((field) =>
       field.key === "amount" ? { ...field, value: "0.01" } : field
-    )),
+    )).valid,
     false
   );
 });
 
-test("does not accept an unsigned Paynow API response", async () => {
+test("an unsigned error reply surfaces Paynow's own reason instead of a security error", async () => {
   const previousFetch = global.fetch;
   setPaynowCredentials("integration-id", "test-integration-key");
   global.fetch = async () => ({
-    text: async () => "status=Ok&pollurl=https%3A%2F%2Fwww.paynow.co.zw%2Fpoll"
+    text: async () => "status=Error&error=Amount%20too%20low"
   });
 
   try {
@@ -84,8 +89,32 @@ test("does not accept an unsigned Paynow API response", async () => {
         resultUrl: "https://example.com/callback",
         returnUrl: "https://example.com/receipt"
       }),
-      /failed its security check/
+      /Paynow: Amount too low/
     );
+  } finally {
+    global.fetch = previousFetch;
+  }
+});
+
+test("an unsigned successful reply still starts the payment", async () => {
+  const previousFetch = global.fetch;
+  setPaynowCredentials("integration-id", "test-integration-key");
+  global.fetch = async () => ({
+    text: async () => "status=Ok&pollurl=https%3A%2F%2Fwww.paynow.co.zw%2Fpoll&instructions=Prompt%20sent"
+  });
+
+  try {
+    const initiated = await paynow.initiateExpress({
+      reference: "IF-2610-0001",
+      amount: 33,
+      description: "Test order",
+      phone: "0771234567",
+      method: "ecocash",
+      resultUrl: "https://example.com/callback",
+      returnUrl: "https://example.com/receipt"
+    });
+    assert.equal(initiated.pollurl, "https://www.paynow.co.zw/poll");
+    assert.equal(initiated.instructions, "Prompt sent");
   } finally {
     global.fetch = previousFetch;
   }
@@ -95,8 +124,8 @@ test("rejects missing, duplicate, or malformed hashes", () => {
   setPaynowCredentials("integration-id", "test-integration-key");
   const fields = [{ key: "status", value: "Paid" }];
   const hash = paynow.hashValues(["Paid"], "test-integration-key");
-  assert.equal(paynow.verifyInbound([...fields, { key: "hash", value: hash }, { key: "hash", value: hash }]), false);
-  assert.equal(paynow.verifyInbound([...fields, { key: "hash", value: "not-a-hash" }]), false);
+  assert.equal(paynow.verifyInbound([...fields, { key: "hash", value: hash }, { key: "hash", value: hash }]).valid, false);
+  assert.equal(paynow.verifyInbound([...fields, { key: "hash", value: "not-a-hash" }]).valid, false);
 });
 
 test("matches only equal, positive amounts to the cent", () => {

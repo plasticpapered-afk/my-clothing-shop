@@ -114,6 +114,10 @@ async function applyPaynowUpdate(reference, update) {
   if (!order) return { ok: false, error: "Order not found." };
   const state = paynow.normalizeStatus(update.status);
 
+  if (state === "paid" && update.signed === false) {
+    console.warn("Ignored an unsigned paid confirmation for order", order.reference);
+    return { ok: true, state: "pending" };
+  }
   if (state === "paid") {
     if (!paynow.MOBILE_METHODS.includes(order.payment_method)) {
       return { ok: false, error: "This order is not a Paynow mobile-money order." };
@@ -372,11 +376,20 @@ router.post("/api/admin/products/:id/variants", requireDatabase, requireStaff, a
 
 router.put("/api/admin/variants/:id", requireDatabase, requireStaff, async (req, res) => {
   const id = int(req.params.id);
-  const existing = await db.query("SELECT product_id FROM product_variants WHERE id = $1", [id]);
+  const existing = await db.query("SELECT product_id, price FROM product_variants WHERE id = $1", [id]);
   if (!existing.rows[0]) return bad(res, "Variant not found.");
   const body = req.body || {};
-  const price = body.price === undefined ? undefined : money(body.price);
-  if (price === undefined) return bad(res, "Enter a valid variant price, or leave it empty to use the product price.");
+  // No price in the request means "keep the current one", so stock-only
+  // saves work. An empty value means "use the product price".
+  let price;
+  if (body.price === undefined) {
+    price = existing.rows[0].price === null ? null : Number(existing.rows[0].price);
+  } else if (body.price === null || body.price === "") {
+    price = null;
+  } else {
+    price = money(body.price);
+    if (price === undefined) return bad(res, "Enter a valid variant price, or leave it empty to use the product price.");
+  }
   const stock = int(body.stock, 0);
   if (stock < 0 || stock > 100000) return bad(res, "Enter a valid stock count.");
   await db.query(
@@ -1044,7 +1057,8 @@ router.post("/api/payments/paynow/callback", requireDatabase, async (req, res) =
 
   try {
     const pairs = Object.entries(req.body || {}).map(([key, value]) => ({ key: key.toLowerCase(), value: String(value) }));
-    if (!paynow.verifyInbound(pairs)) {
+    const check = paynow.verifyInbound(pairs);
+    if (!check.valid) {
       console.warn("Rejected a Paynow callback with a bad hash.");
       return res.status(400).send("Invalid hash");
     }
@@ -1053,7 +1067,7 @@ router.post("/api/payments/paynow/callback", requireDatabase, async (req, res) =
     const paynowreference = String((req.body && req.body.paynowreference) || "");
     const amount = String((req.body && req.body.amount) || "");
     if (!reference || !status) return res.status(400).send("Missing payment reference or status");
-    const applied = await applyPaynowUpdate(reference, { status, amount, paynowreference });
+    const applied = await applyPaynowUpdate(reference, { status, amount, paynowreference, signed: check.signed });
     if (!applied.ok) return res.status(400).send(applied.error);
     res.status(200).send("OK");
   } catch (error) {

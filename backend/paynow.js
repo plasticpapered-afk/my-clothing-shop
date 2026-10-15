@@ -47,16 +47,22 @@ function parseUrlEncoded(text) {
   return pairs;
 }
 
-// Verifies an inbound message from Paynow.
+// Verifies an inbound message from Paynow and returns a verdict:
+//   { valid, signed, hasHash }
+//   signed  - a signature was present and matched (only this may confirm money)
+//   valid   - the message can be read at all. Paynow sometimes omits the
+//             signature entirely (its error replies are known to do so),
+//             so an unsigned message is processable for starting/checking a
+//             payment, but it can never mark an order as paid.
 function verifyInbound(pairs) {
   const key = integrationKey();
-  if (!key.trim() || !Array.isArray(pairs)) return false;
-
-  const hashPairs = pairs.filter((pair) => String(pair.key || "").toLowerCase() === "hash");
-  if (hashPairs.length !== 1) return false;
+  const hashPairs = Array.isArray(pairs) ? pairs.filter((pair) => String(pair.key || "").toLowerCase() === "hash") : [];
+  if (!key.trim() || !Array.isArray(pairs)) return { valid: false, signed: false, hasHash: hashPairs.length === 1 };
+  if (hashPairs.length === 0) return { valid: true, signed: false, hasHash: false };
+  if (hashPairs.length > 1) return { valid: false, signed: false, hasHash: true };
 
   const suppliedHash = String(hashPairs[0].value || "");
-  if (!/^[a-f0-9]{128}$/i.test(suppliedHash)) return false;
+  if (!/^[a-f0-9]{128}$/i.test(suppliedHash)) return { valid: false, signed: false, hasHash: true };
 
   const values = pairs
     .filter((pair) => String(pair.key || "").toLowerCase() !== "hash")
@@ -64,7 +70,8 @@ function verifyInbound(pairs) {
   const expectedHash = hashValues(values, key);
   const suppliedBytes = Buffer.from(suppliedHash, "hex");
   const expectedBytes = Buffer.from(expectedHash, "hex");
-  return suppliedBytes.length === expectedBytes.length && crypto.timingSafeEqual(suppliedBytes, expectedBytes);
+  const signed = suppliedBytes.length === expectedBytes.length && crypto.timingSafeEqual(suppliedBytes, expectedBytes);
+  return { valid: signed, signed, hasHash: true };
 }
 
 function amountMatches(actual, expected) {
@@ -112,11 +119,18 @@ async function initiateExpress({ reference, amount, description, phone, method, 
   const map = {};
   for (const pair of pairs) map[pair.key] = pair.value;
 
-  if (!verifyInbound(pairs)) {
-    throw new Error("Paynow's reply failed its security check.");
+  const check = verifyInbound(pairs);
+  if (!check.valid) {
+    throw new Error("Paynow's reply failed its security check. Confirm the Integration Key matches the Integration ID.");
+  }
+  if (!check.signed) {
+    // Paynow sometimes replies without a signature (its error replies are
+    // known to). Nothing here confirms money, so we read it and show the
+    // customer the real reason instead of a misleading security error.
+    console.warn("Paynow initiate reply was unsigned:", text.slice(0, 200));
   }
   if ((map.status || "").toLowerCase() !== "ok") {
-    throw new Error(map.error || "Paynow could not start the payment.");
+    throw new Error(map.error ? `Paynow: ${map.error}` : "Paynow could not start the payment.");
   }
   return {
     pollurl: map.pollurl || "",
@@ -133,14 +147,19 @@ async function pollStatus(pollUrl) {
   const pairs = parseUrlEncoded(text);
   const map = {};
   for (const pair of pairs) map[pair.key] = pair.value;
-  if (!verifyInbound(pairs)) {
+  const check = verifyInbound(pairs);
+  if (!check.valid) {
     throw new Error("Paynow status failed its security check.");
+  }
+  if (!check.signed) {
+    console.warn("Paynow status reply was unsigned:", text.slice(0, 200));
   }
   return {
     status: (map.status || "").toLowerCase(),
     paynowreference: map.paynowreference || "",
     amount: map.amount || "",
-    pollurl: map.pollurl || pollUrl
+    pollurl: map.pollurl || pollUrl,
+    signed: check.signed
   };
 }
 
