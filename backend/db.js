@@ -239,45 +239,54 @@ const SEED_PRODUCTS = [
 async function syncServiceCatalogue() {
   const keep = SEED_PRODUCTS.map((product) => product.name);
 
-  // Switch off anything that is not one of the cleaning services (the old clothing pieces).
-  await query("UPDATE products SET active = false WHERE NOT (name = ANY($1::text[])) AND active", [keep]);
+  // Switch off only the retired clothing categories. Anything else the
+  // owner adds in the back office is theirs and is left alone.
+  await query(
+    "UPDATE products SET active = false WHERE COALESCE(category, '') IN ('tops', 'sets', 'jerseys', 'accessories') AND active"
+  );
+
+  // Two server instances starting at the same moment can both decide to
+  // insert the same service. Remove the doubles (they are brand new, never
+  // ordered) and then let unique indexes make it impossible to recur.
+  await query(
+    `DELETE FROM product_variants WHERE product_id IN (
+       SELECT id FROM products WHERE name = ANY($1::text[])
+       AND id NOT IN (SELECT MIN(id) FROM products WHERE name = ANY($1::text[]) GROUP BY name)
+     )`,
+    [keep]
+  );
+  await query(
+    `DELETE FROM products WHERE name = ANY($1::text[])
+     AND id NOT IN (SELECT MIN(id) FROM products WHERE name = ANY($1::text[]) GROUP BY name)`,
+    [keep]
+  );
+  await query("CREATE UNIQUE INDEX IF NOT EXISTS products_name_key ON products (name)");
+  await query("CREATE UNIQUE INDEX IF NOT EXISTS product_variants_slot_key ON product_variants (product_id, size, COALESCE(colour, ''))");
 
   for (const product of SEED_PRODUCTS) {
-    const found = await query("SELECT id, image_url, base_price FROM products WHERE name = $1", [product.name]);
-    let productId;
-    if (found.rows[0]) {
-      productId = found.rows[0].id;
-      const row = found.rows[0];
-      await query(
-        `UPDATE products
-            SET active = true, category = $2, label = $3, description = $4, position = $5,
-                image_url = CASE WHEN COALESCE(image_url, '') = '' THEN $6 ELSE image_url END,
-                base_price = CASE WHEN base_price IS NULL THEN $7 ELSE base_price END
-          WHERE id = $1`,
-        [productId, product.category, product.label, product.description, product.position, product.image_url, SERVICE_PRICE]
-      );
-    } else {
-      const inserted = await query(
-        `INSERT INTO products (name, description, category, label, image_url, base_price, position)
-         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
-        [product.name, product.description, product.category, product.label, product.image_url, SERVICE_PRICE, product.position]
-      );
-      productId = inserted.rows[0].id;
-    }
+    const upserted = await query(
+      `INSERT INTO products (name, description, category, label, image_url, base_price, position)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       ON CONFLICT (name) DO UPDATE SET
+         active = true,
+         category = EXCLUDED.category,
+         label = EXCLUDED.label,
+         description = EXCLUDED.description,
+         position = EXCLUDED.position,
+         image_url = CASE WHEN COALESCE(products.image_url, '') = '' THEN EXCLUDED.image_url ELSE products.image_url END,
+         base_price = CASE WHEN products.base_price IS NULL THEN EXCLUDED.base_price ELSE products.base_price END
+       RETURNING id`,
+      [product.name, product.description, product.category, product.label, product.image_url, SERVICE_PRICE, product.position]
+    );
+    const productId = upserted.rows[0].id;
 
     for (const option of product.packages || ["Standard"]) {
-      const exists = await query(
-        "SELECT id FROM product_variants WHERE product_id = $1 AND size = $2 AND colour = ''",
-        [productId, option]
+      await query(
+        `INSERT INTO product_variants (product_id, size, colour, stock, price)
+         VALUES ($1, $2, '', 99, $3)
+         ON CONFLICT (product_id, size, COALESCE(colour, '')) DO UPDATE SET active = true`,
+        [productId, option, SERVICE_PRICE]
       );
-      if (!exists.rows[0]) {
-        await query(
-          "INSERT INTO product_variants (product_id, size, colour, stock) VALUES ($1, $2, '', 99)",
-          [productId, option]
-        );
-      } else {
-        await query("UPDATE product_variants SET active = true WHERE id = $1", [exists.rows[0].id]);
-      }
     }
     // Retire package options that are no longer offered (old clothing sizes, etc).
     await query(
