@@ -4,11 +4,11 @@
 body {
   margin: 0; min-height: 100vh; padding: 18px 14px 40px; color: #efe9f6;
   font-family: "Inter", "Segoe UI", system-ui, sans-serif; line-height: 1.55;
-  background: radial-gradient(800px 500px at 10% -10%, #251639 0%, transparent 60%), radial-gradient(800px 480px at 100% 0%, #10302f 0%, transparent 55%), #0d0a14;
+  background: #161114;
 }
 .sheet {
   max-width: 480px; margin: 20px auto; padding: 30px 26px; border-radius: 28px;
-  background: rgba(24, 16, 36, .82); backdrop-filter: blur(20px);
+  background: #211b1e;
   border: 1px solid rgba(255, 255, 255, .11); box-shadow: 0 30px 80px rgba(0, 0, 0, .55);
   animation: rise .6s cubic-bezier(.2, .8, .2, 1);
 }
@@ -16,7 +16,7 @@ body {
 
 .brand {
   display: inline-block; font-family: "Sora", "Segoe UI", sans-serif; font-size: 26px; font-weight: 800; letter-spacing: .5px; text-decoration: none;
-  background: linear-gradient(100deg, #e49ab9, #fff 55%, #9b6bd1); -webkit-background-clip: text; background-clip: text; color: transparent;
+  color: #e49ab9;
 }
 .tagline { margin: 0 0 18px; color: #e49ab9; font-size: 10.5px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; }
 h1 { margin: 14px 0 2px; font-family: "Sora", sans-serif; font-size: 22px; }
@@ -35,7 +35,7 @@ h1 { margin: 14px 0 2px; font-family: "Sora", sans-serif; font-size: 22px; }
 .code { font-family: "Sora", sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 3px; color: #fff; text-align: center; margin: 8px 0; }
 .expiry { text-align: center; color: #a398b8; font-size: 12px; margin: 0 0 14px; }
 
-.btn { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 50px; margin-top: 10px; padding: 0 18px; border: 0; border-radius: 999px; background: linear-gradient(120deg, #3b2757, #c4608a); color: #fff; font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; transition: transform .2s, box-shadow .25s; }
+.btn { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 50px; margin-top: 10px; padding: 0 18px; border: 0; border-radius: 999px; background: #c4608a; color: #fff; font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; transition: transform .2s, box-shadow .25s; }
 .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(196, 96, 138, .38); }
 .btn.light { background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .13); }
 .btn.light:hover { box-shadow: none; background: rgba(255, 255, 255, .1); }
@@ -55,7 +55,7 @@ th { font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color:
 .status.paid { color: #7fd6b2; border-color: rgba(127, 214, 178, .5); background: rgba(127, 214, 178, .1); }
 .status.unpaid { color: #f1c981; border-color: rgba(241, 201, 129, .45); background: rgba(241, 201, 129, .09); }
 .thanks { margin: 18px 0 0; font-size: 12.5px; color: #a398b8; line-height: 1.65; }
-.print-btn { display: block; width: 100%; margin-top: 18px; padding: 14px; border: 0; border-radius: 999px; background: linear-gradient(120deg, #3b2757, #c4608a); color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; }
+.print-btn { display: block; width: 100%; margin-top: 18px; padding: 14px; border: 0; border-radius: 999px; background: #c4608a; color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; }
 
 @media print {
   body { background: #fff; color: #111; padding: 0; }
