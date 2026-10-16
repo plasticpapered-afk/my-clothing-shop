@@ -1,68 +1,90 @@
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const { generateChatReply } = require('./chat-agent');
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const { generateChatReply, pickGeminiModels, SYSTEM_PROMPT } = require("./chat-agent");
 
-test('sends chat to Vercel AI Gateway with the server-side key', async () => {
-  const previousKey = process.env.AI_GATEWAY_API_KEY;
-  const previousGeminiKey = process.env.GEMINI_API_KEY;
-  const previousFetch = global.fetch;
-  delete process.env.GEMINI_API_KEY;
-  process.env.AI_GATEWAY_API_KEY = 'test-key';
+const names = ["GEMINI_API_KEY", "AI_GATEWAY_API_KEY", "GEMINI_MODEL", "AI_GATEWAY_MODEL"];
+const saved = Object.fromEntries(names.map((name) => [name, process.env[name]]));
+const savedFetch = global.fetch;
+
+function reset() {
+  for (const name of names) delete process.env[name];
+  global.fetch = savedFetch;
+}
+
+test.afterEach(reset);
+test.after(() => {
+  for (const [name, value] of Object.entries(saved)) {
+    if (value === undefined) delete process.env[name];
+    else process.env[name] = value;
+  }
+  global.fetch = savedFetch;
+});
+
+const ok = (body) => ({ ok: true, status: 200, json: async () => body });
+const fail = (status) => ({ ok: false, status, json: async () => ({}) });
+const reply = (text) => ok({ choices: [{ message: { content: text } }] });
+
+test("sends chat to the Vercel AI Gateway when only that key is set", async () => {
+  reset();
+  process.env.AI_GATEWAY_API_KEY = "gateway-key";
   let request;
   global.fetch = async (url, options) => {
     request = { url, options };
-    return {
-      ok: true,
-      json: async () => ({ choices: [{ message: { content: 'Hello from the assistant.' } }] })
-    };
+    return reply("Hello from the gateway.");
   };
-
-  try {
-    const reply = await generateChatReply('hello');
-    assert.equal(reply, 'Hello from the assistant.');
-    assert.equal(request.url, 'https://ai-gateway.vercel.sh/v1/chat/completions');
-    assert.equal(request.options.headers.Authorization, 'Bearer test-key');
-    assert.equal(JSON.parse(request.options.body).model, 'openai/gpt-4o-mini');
-  } finally {
-    global.fetch = previousFetch;
-    if (previousKey === undefined) delete process.env.AI_GATEWAY_API_KEY;
-    else process.env.AI_GATEWAY_API_KEY = previousKey;
-    if (previousGeminiKey === undefined) delete process.env.GEMINI_API_KEY;
-    else process.env.GEMINI_API_KEY = previousGeminiKey;
-  }
+  assert.equal(await generateChatReply("hello"), "Hello from the gateway.");
+  assert.equal(request.url, "https://ai-gateway.vercel.sh/v1/chat/completions");
+  assert.equal(request.options.headers.Authorization, "Bearer gateway-key");
 });
 
-test('requires an API key without making a request', async () => {
-  const previousKey = process.env.AI_GATEWAY_API_KEY;
-  delete process.env.AI_GATEWAY_API_KEY;
-
-  try {
-    await assert.rejects(generateChatReply('hello'), /AI_GATEWAY_API_KEY is not configured/);
-  } finally {
-    if (previousKey !== undefined) process.env.AI_GATEWAY_API_KEY = previousKey;
-  }
+test("says clearly when no key is configured, without calling out", async () => {
+  reset();
+  global.fetch = async () => { throw new Error("must not be called"); };
+  await assert.rejects(generateChatReply("hello"), /not configured/);
 });
 
-test('uses Gemini when GEMINI_API_KEY is set', async () => {
-  const previousGemini = process.env.GEMINI_API_KEY;
-  const previousGateway = process.env.AI_GATEWAY_API_KEY;
-  const previousFetch = global.fetch;
-  process.env.GEMINI_API_KEY = 'gem-key';
-  process.env.AI_GATEWAY_API_KEY = 'gateway-key';
-  let request;
+test("asks Google which models the key can use instead of guessing names", async () => {
+  reset();
+  process.env.GEMINI_API_KEY = "gem-key-1";
+  const calls = [];
   global.fetch = async (url, options) => {
-    request = { url, options };
-    return { ok: true, json: async () => ({ choices: [{ message: { content: 'Hi from Gemini.' } }] }) };
+    calls.push(String(url));
+    if (String(url).includes("/v1beta/models")) {
+      return ok({ models: [
+        { name: "models/gemini-3.8-flash", supportedGenerationMethods: ["generateContent"] },
+        { name: "models/gemini-3.8-flash-tts", supportedGenerationMethods: ["generateContent"] }
+      ] });
+    }
+    assert.equal(JSON.parse(options.body).model, "gemini-3.8-flash");
+    return reply("Hi from Gemini.");
   };
+  assert.equal(await generateChatReply("hello"), "Hi from Gemini.");
+  assert.ok(calls[0].includes("/v1beta/models"), "model list requested first");
+});
 
-  try {
-    const reply = await generateChatReply('hello');
-    assert.equal(reply, 'Hi from Gemini.');
-    assert.equal(request.url, 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions');
-    assert.equal(request.options.headers.Authorization, 'Bearer gem-key');
-  } finally {
-    global.fetch = previousFetch;
-    if (previousGemini === undefined) delete process.env.GEMINI_API_KEY; else process.env.GEMINI_API_KEY = previousGemini;
-    if (previousGateway === undefined) delete process.env.AI_GATEWAY_API_KEY; else process.env.AI_GATEWAY_API_KEY = previousGateway;
-  }
+test("falls through to the next model when one answers 404", async () => {
+  reset();
+  process.env.GEMINI_API_KEY = "gem-key-2";
+  global.fetch = async (url, options) => {
+    if (String(url).includes("/v1beta/models")) {
+      return ok({ models: [
+        { name: "models/gemini-3.8-flash", supportedGenerationMethods: ["generateContent"] },
+        { name: "models/gemini-3.6-flash", supportedGenerationMethods: ["generateContent"] }
+      ] });
+    }
+    return JSON.parse(options.body).model === "gemini-3.8-flash" ? fail(404) : reply("Second model works.");
+  };
+  assert.equal(await generateChatReply("hello"), "Second model works.");
+});
+
+test("never picks voice, image or speech models for chat", () => {
+  const picked = pickGeminiModels([
+    "gemini-3.8-flash-tts", "gemini-3.1-flash-live-preview", "gemini-3.1-flash-image", "gemini-3.5-flash-lite"
+  ]);
+  assert.deepEqual(picked, ["gemini-3.5-flash-lite"]);
+});
+
+test("the assistant knows the $50 price and the new domain", () => {
+  assert.match(SYSTEM_PROMPT, /\$50/);
+  assert.match(SYSTEM_PROMPT, /kharece\.co\.zw/);
 });

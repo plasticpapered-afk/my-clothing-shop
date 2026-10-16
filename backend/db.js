@@ -181,13 +181,17 @@ CREATE INDEX IF NOT EXISTS orders_status_idx ON orders (status);
 
 // Seed catalogue mirrors the pieces already on the storefront so the first
 // deploy does not show an empty shop.
+// Every service is listed at the same launch price (USD).
+const SERVICE_PRICE = 50;
+
+// Photos supplied by the owner. Services without a photo yet show a tidy icon.
 const SEED_PRODUCTS = [
   {
     name: "Residential Cleaning",
     category: "residential",
     label: "Home visit",
-    description: "Homes that shine. Regular or one-off cleaning for houses and apartments.",
-    image_url: "",
+    description: "A cleaner home, a healthier you. Regular or one-off cleaning for houses and apartments.",
+    image_url: "images/dp/residential.jpg",
     packages: ["1 bedroom", "2 bedrooms", "3 bedrooms", "4+ bedrooms"],
     position: 1
   },
@@ -195,8 +199,8 @@ const SEED_PRODUCTS = [
     name: "Commercial Cleaning",
     category: "commercial",
     label: "Workspace",
-    description: "Workspaces that impress. Offices, shops and common areas.",
-    image_url: "",
+    description: "Clean workspaces, greater productivity. Offices, shops and common areas.",
+    image_url: "images/dp/commercial.jpg",
     packages: ["Small office", "Medium office", "Large premises"],
     position: 2
   },
@@ -204,8 +208,8 @@ const SEED_PRODUCTS = [
     name: "Deep Cleaning",
     category: "deep",
     label: "Deep clean",
-    description: "A deep clean you can trust. Kitchens, bathrooms, appliances and hard-to-reach spots.",
-    image_url: "",
+    description: "Beyond the surface, for a fresher space. Kitchens, bathrooms, appliances and hard-to-reach spots.",
+    image_url: "images/dp/deep-cleaning.jpg",
     packages: ["Standard deep clean", "Move-in / move-out", "Post-construction"],
     position: 3
   },
@@ -228,6 +232,61 @@ const SEED_PRODUCTS = [
     position: 5
   }
 ];
+
+// Runs on every start and is safe to repeat: it never duplicates a service,
+// never touches orders, and never overwrites a photo or price the owner changed
+// later in the back office (it only fills in what is still empty).
+async function syncServiceCatalogue() {
+  const keep = SEED_PRODUCTS.map((product) => product.name);
+
+  // Switch off anything that is not one of the cleaning services (the old clothing pieces).
+  await query("UPDATE products SET active = false WHERE NOT (name = ANY($1::text[])) AND active", [keep]);
+
+  for (const product of SEED_PRODUCTS) {
+    const found = await query("SELECT id, image_url, base_price FROM products WHERE name = $1", [product.name]);
+    let productId;
+    if (found.rows[0]) {
+      productId = found.rows[0].id;
+      const row = found.rows[0];
+      await query(
+        `UPDATE products
+            SET active = true, category = $2, label = $3, description = $4, position = $5,
+                image_url = CASE WHEN COALESCE(image_url, '') = '' THEN $6 ELSE image_url END,
+                base_price = CASE WHEN base_price IS NULL THEN $7 ELSE base_price END
+          WHERE id = $1`,
+        [productId, product.category, product.label, product.description, product.position, product.image_url, SERVICE_PRICE]
+      );
+    } else {
+      const inserted = await query(
+        `INSERT INTO products (name, description, category, label, image_url, base_price, position)
+         VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+        [product.name, product.description, product.category, product.label, product.image_url, SERVICE_PRICE, product.position]
+      );
+      productId = inserted.rows[0].id;
+    }
+
+    for (const option of product.packages || ["Standard"]) {
+      const exists = await query(
+        "SELECT id FROM product_variants WHERE product_id = $1 AND size = $2 AND colour = ''",
+        [productId, option]
+      );
+      if (!exists.rows[0]) {
+        await query(
+          "INSERT INTO product_variants (product_id, size, colour, stock) VALUES ($1, $2, '', 99)",
+          [productId, option]
+        );
+      } else {
+        await query("UPDATE product_variants SET active = true WHERE id = $1", [exists.rows[0].id]);
+      }
+    }
+    // Retire package options that are no longer offered (old clothing sizes, etc).
+    await query(
+      "UPDATE product_variants SET active = false WHERE product_id = $1 AND NOT (size = ANY($2::text[]))",
+      [productId, product.packages || ["Standard"]]
+    );
+  }
+}
+
 let schemaPromise = null;
 
 // Makes sure tables exist. Safe to call on every request; only does real work
@@ -240,24 +299,7 @@ function ensureSchema() {
       for (const statement of SCHEMA_SQL.split(";").map((part) => part.trim()).filter(Boolean)) {
         await query(statement);
       }
-      const { rows } = await query("SELECT COUNT(*)::int AS count FROM products");
-      if (rows[0].count === 0) {
-        for (const product of SEED_PRODUCTS) {
-          const inserted = await query(
-            `INSERT INTO products (name, description, category, label, image_url, position)
-             VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
-            [product.name, product.description, product.category, product.label, product.image_url, product.position]
-          );
-          const productId = inserted.rows[0].id;
-          for (const option of product.packages || ["Standard"]) {
-            await query(
-              `INSERT INTO product_variants (product_id, size, colour, stock)
-               VALUES ($1, $2, '', 99)`,
-              [productId, option]
-            );
-          }
-        }
-      }
+      await syncServiceCatalogue();
     })().catch((error) => {
       schemaPromise = null;
       throw error;

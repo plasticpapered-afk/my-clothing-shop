@@ -1,6 +1,6 @@
 # Dust Patrol Cleaning Services
 
-Customer storefront and back office for Dust Patrol (KHAR-ECE Consortium, Harare). Customers pick a cleaning service, check out on the site, and pay with EcoCash or InnBucks (Paynow Express), bank transfer or cash. The back office at `/admin` manages services, bookings, customers, staff and payments.
+Customer storefront and back office for Dust Patrol (KHAR-ECE Consortium, Harare), served at www.kharece.co.zw. Customers pick a cleaning service, check out on the site, and pay with EcoCash or InnBucks (Paynow Express), bank transfer or cash. The back office at `/admin` manages services, bookings, customers, staff and payments.
 
 ## Run locally
 

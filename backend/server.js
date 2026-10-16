@@ -162,32 +162,16 @@ function receiptHtml(order, items) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
 <title>Receipt ${order.reference} | Dust Patrol</title>
-<style>
-  * { box-sizing: border-box; }
-  body { margin: 0; background: #f5f3eb; font-family: "DM Sans", Arial, sans-serif; color: #1d2925; }
-  .sheet { max-width: 430px; margin: 24px auto; background: #fffefa; border: 1px solid #d8dcd2; padding: 30px 26px; }
-  .brand { font-family: "Barlow Condensed", Impact, sans-serif; font-size: 30px; font-weight: 800; letter-spacing: .5px; color: #173c32; }
-  .tagline { margin: 0 0 18px; color: #ed7956; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
-  h1 { margin: 0 0 2px; font-size: 17px; }
-  .ref { font-size: 12px; color: #6a736e; margin: 0 0 18px; }
-  table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
-  th, td { padding: 8px 4px; font-size: 13px; text-align: left; border-bottom: 1px solid #eee; }
-  th { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #6a736e; }
-  .num { text-align: right; white-space: nowrap; }
-  .dim { color: #6a736e; font-size: 12px; }
-  .total-row td { font-weight: 700; border-bottom: none; font-size: 15px; }
-  .status { display: inline-block; padding: 5px 12px; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border: 2px solid; }
-  .paid { color: #173c32; border-color: #173c32; background: #d4e66d; }
-  .unpaid { color: #b3402a; border-color: #b3402a; }
-  .thanks { margin: 16px 0 0; font-size: 12.5px; color: #6a736e; line-height: 1.6; }
-  .print-btn { display: block; width: 100%; margin-top: 18px; padding: 12px; border: 0; background: #173c32; color: #fff; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; }
-  @media print { body { background: #fff; } .sheet { border: 0; margin: 0; } .print-btn { display: none; } }
-</style>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/pages.css">
 </head>
 <body>
 <div class="sheet">
   <div class="brand">DUST PATROL</div>
-  <p class="tagline">Official order receipt</p>
+  <p class="tagline">KHAR-ECE Consortium · Official receipt</p>
   <h1>Receipt</h1>
   <p class="ref">Reference ${order.reference} · ${new Date(order.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</p>
   <table>
@@ -242,33 +226,16 @@ function statusHtml(order) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
 <title>Booking ${order.reference} | Dust Patrol</title>
-<style>
-  * { box-sizing: border-box; }
-  body { margin: 0; background: #f5f3eb; font-family: "DM Sans", Arial, sans-serif; color: #1d2925; }
-  .sheet { max-width: 470px; margin: 20px auto; background: #fffefa; border: 1px solid #d8dcd2; padding: 26px 22px; }
-  .brand { font-family: "Barlow Condensed", Impact, sans-serif; font-size: 26px; font-weight: 800; color: #173c32; text-decoration: none; }
-  h1 { margin: 14px 0 2px; font-size: 22px; }
-  .ref { margin: 0 0 16px; color: #6a736e; font-size: 13px; }
-  .summary { padding: 12px 14px; background: #f1f5e8; border: 1px solid #d8dcd2; font-size: 14px; margin: 0 0 14px; }
-  .summary strong { color: #173c32; }
-  .badge { display: block; padding: 14px; text-align: center; font-size: 14px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; border: 2px solid; margin: 0 0 16px; }
-  .pending { color: #8a6d1a; border-color: #c9a227; background: #fdf6dd; }
-  .approved { color: #173c32; border-color: #173c32; background: #d4e66d; }
-  .cancelled { color: #b3402a; border-color: #b3402a; background: #fdeae5; }
-  .instructions { font-size: 14px; line-height: 1.6; margin: 0 0 14px; }
-  .code { font-family: "Barlow Condensed", Impact, sans-serif; font-size: 34px; font-weight: 800; letter-spacing: 2px; color: #173c32; text-align: center; margin: 8px 0; }
-  .expiry { text-align: center; color: #6a736e; font-size: 12px; margin: 0 0 14px; }
-  .btn { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 48px; margin-top: 10px; padding: 0 18px; border: 0; background: #173c32; color: #fff; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; text-decoration: none; cursor: pointer; }
-  .btn.light { background: #fff; color: #173c32; border: 1px solid #173c32; }
-  .btn:disabled { opacity: .5; }
-  .note { color: #6a736e; font-size: 12px; text-align: center; margin: 12px 0 0; }
-  .error-box { display: none; padding: 10px 12px; margin: 0 0 12px; background: #fdeae5; border: 1px solid #e5b8ab; color: #b3402a; font-size: 13px; }
-  .error-box.visible { display: block; }
-</style>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/pages.css">
 </head>
 <body>
 <div class="sheet">
   <a class="brand" href="/">DUST PATROL</a>
+  <p class="tagline">KHAR-ECE Consortium</p>
   <h1>Payment status</h1>
   <p class="ref">Order ${order.reference}</p>
   <p class="summary">Total <strong>$${Number(order.total).toFixed(2)}</strong> · paying by <strong>${method}</strong></p>
