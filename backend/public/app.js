@@ -1,4 +1,4 @@
-    const whatsappNumber = "263789973632";
+    const whatsappNumber = "263774502737";
     const bagStorageKey = "internal-frontier-inquiry-bag";
     const bagDrawer = document.getElementById("bag-drawer");
     const bagItems = document.getElementById("bag-items");
@@ -67,7 +67,7 @@
       if (!inquiryBag.length) {
         const emptyMessage = document.createElement("p");
         emptyMessage.className = "bag-empty";
-        emptyMessage.textContent = "Your enquiry bag is empty. Add a piece from the collection to get started.";
+        emptyMessage.textContent = "Your booking is empty. Add a cleaning service to get started.";
         bagItems.append(emptyMessage);
         return;
       }
@@ -123,7 +123,7 @@
       });
 
       document.getElementById("empty-results").hidden = visibleCount !== 0;
-      document.getElementById("result-count").textContent = `${visibleCount} ${visibleCount === 1 ? "piece" : "pieces"}`;
+      document.getElementById("result-count").textContent = `${visibleCount} ${visibleCount === 1 ? "service" : "services"}`;
     }
 
     function setChatOpen(isOpen) {
@@ -193,7 +193,15 @@
       revealTargets.forEach((target) => revealObserver.observe(target));
     }
 
-    const CATEGORY_LABELS = { tops: "Tops", sets: "Tracksuits", jerseys: "Jerseys", accessories: "Accessories", other: "Other" };
+    const SERVICE_GLYPHS = {
+      residential: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>',
+      commercial: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2"/></svg>',
+      deep: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 3c-2 4-6 6-10 6l2 3c3-1 6-4 8-9z"/><path d="M8 10l-4 9c4 0 7-2 9-5"/><path d="M4 19h7"/></svg>',
+      window: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg>',
+      sanitization: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>',
+      other: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/></svg>'
+    };
+    const CATEGORY_LABELS = { residential: "Residential", commercial: "Commercial", deep: "Deep clean", window: "Windows", sanitization: "Sanitization", tops: "Tops", sets: "Tracksuits", jerseys: "Jerseys", accessories: "Accessories", other: "Other" };
 
     function wireAddButtons() {
       document.querySelectorAll(".add-button").forEach((button) => {
@@ -202,7 +210,7 @@
           const sizeSelect = product.querySelector(".size-select");
           if (!sizeSelect.value) {
             sizeSelect.focus();
-            showToast("Choose a size before adding this piece.");
+            showToast("Choose a package before adding this service.");
             return;
           }
           const selectedOption = sizeSelect.selectedOptions[0];
@@ -218,7 +226,7 @@
             price: selectedPrice !== null && Number.isFinite(selectedPrice) ? selectedPrice : null
           });
           saveBag();
-          showToast("Added to your enquiry bag.");
+          showToast("Added to your booking.");
         });
       });
     }
@@ -231,14 +239,22 @@
 
       const image = document.createElement("div");
       image.className = "product-image";
-      const img = document.createElement("img");
-      img.src = product.image_url || "";
-      img.alt = product.name;
-      img.loading = "lazy";
       const label = document.createElement("span");
       label.className = "product-label";
-      label.textContent = product.label || CATEGORY_LABELS[product.category] || "Shop";
-      image.append(img, label);
+      label.textContent = product.label || CATEGORY_LABELS[product.category] || "Service";
+      if (product.image_url) {
+        const img = document.createElement("img");
+        img.src = product.image_url;
+        img.alt = product.name;
+        img.loading = "lazy";
+        image.append(img);
+      } else {
+        const glyph = document.createElement("span");
+        glyph.className = "service-glyph";
+        glyph.innerHTML = SERVICE_GLYPHS[product.category] || SERVICE_GLYPHS.other;
+        image.append(glyph);
+      }
+      image.append(label);
 
       const info = document.createElement("div");
       info.className = "product-info";
@@ -284,7 +300,7 @@
       const addButton = document.createElement("button");
       addButton.className = "add-button";
       addButton.type = "button";
-      addButton.textContent = "Add to enquiry";
+      addButton.textContent = "Add to booking";
       actions.append(sizeWrap, addButton);
 
       info.append(category, name, price, actions);
@@ -335,7 +351,7 @@
 
     function openCheckout() {
       if (!bagCanCheckout()) {
-        showToast("Some pieces need prices set by the shop. Please enquire on WhatsApp.");
+        showToast("Some services need prices set by the shop. Please ask on WhatsApp.");
         return;
       }
       renderCheckoutForm();
@@ -513,7 +529,7 @@
       const note = failedOnline
         ? `Online payment did not start: ${(paynow.error || "Paynow is not reachable right now")}. Your order is safe with reference ${order.reference}. Please pay on WhatsApp and we'll sort it out.`
         : `We'll confirm your order on WhatsApp with ${order.payment_method === "bank_transfer" ? "our bank details" : "payment and delivery details"}.`;
-      const message = `Hi Internal Frontier, I just placed order ${order.reference} ($${order.total.toFixed(2)}). I chose ${methodName}.`;
+      const message = `Hi Dust Patrol, I just placed booking ${order.reference} ($${order.total.toFixed(2)}). I chose ${methodName}.`;
       card.innerHTML = `${base}
         <div class="checkout-error ${failedOnline ? "is-visible" : ""}">${failedOnline ? note : ""}</div>
         <p class="checkout-sub">${failedOnline ? "Your order is saved. Pay directly with us on WhatsApp:" : note}</p>
@@ -547,7 +563,7 @@
           if (!response.ok || !data || data.ok !== true) return;
           if (data.status === "paid") {
             stopPaymentPolling();
-            const message = `Hi Internal Frontier, I paid for order ${order.reference} online. Please confirm you received it.`;
+            const message = `Hi Dust Patrol, I paid for booking ${order.reference} online. Please confirm you received it.`;
             card.innerHTML = `
               <button class="checkout-close" id="checkout-close" type="button" aria-label="Close checkout">×</button>
               <h2>Payment received 🎉</h2>
@@ -610,7 +626,7 @@
       }).join("\n");
       const allPriced = inquiryBag.every((item) => item.price !== null && item.price !== undefined);
       const total = allPriced ? `$${inquiryBag.reduce((sum, item) => sum + Number(item.price), 0).toFixed(2)}` : "to be confirmed";
-      const message = `Hi Internal Frontier, I'd like to ask about these pieces:\n${productLines}\nTotal: ${total}. Please confirm availability. Thank you!`;
+      const message = `Hi Dust Patrol, I'd like to ask about these cleaning services:\n${productLines}\nTotal: ${total}. Please confirm availability and your earliest date. Thank you!`;
       window.open(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
       // Message is on its way to WhatsApp: empty the bag and go back to zero
       inquiryBag = [];

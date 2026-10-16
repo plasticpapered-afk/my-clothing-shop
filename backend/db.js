@@ -1,4 +1,4 @@
-// Database layer for the Internal Frontier back office.
+// Database layer for the Dust Patrol back office.
 // Uses PostgreSQL via DATABASE_URL. All schema changes are idempotent so the
 // app can start against a brand new empty database and set itself up.
 
@@ -183,45 +183,51 @@ CREATE INDEX IF NOT EXISTS orders_status_idx ON orders (status);
 // deploy does not show an empty shop.
 const SEED_PRODUCTS = [
   {
-    name: "Silent Wars Graphic Tee",
-    category: "tops",
-    label: "Graphic tee",
-    index_label: "Tops / 01",
-    description: "Expressive everyday staple from the Internal Frontier line.",
-    image_url: "images/WhatsApp Image 2026-10-10 at 22.56.42.jpeg",
+    name: "Residential Cleaning",
+    category: "residential",
+    label: "Home visit",
+    description: "Homes that shine. Regular or one-off cleaning for houses and apartments.",
+    image_url: "",
+    packages: ["1 bedroom", "2 bedrooms", "3 bedrooms", "4+ bedrooms"],
     position: 1
   },
   {
-    name: "Black Frontier Tracksuit",
-    category: "sets",
-    label: "Tracksuit",
-    index_label: "Tracksuits / 01",
-    description: "Full tracksuit set in black.",
-    image_url: "images/WhatsApp Image 2026-10-10 at 22.56.42 (1).jpeg",
+    name: "Commercial Cleaning",
+    category: "commercial",
+    label: "Workspace",
+    description: "Workspaces that impress. Offices, shops and common areas.",
+    image_url: "",
+    packages: ["Small office", "Medium office", "Large premises"],
     position: 2
   },
   {
-    name: "White Frontier Tracksuit",
-    category: "sets",
-    label: "Tracksuit",
-    index_label: "Tracksuits / 02",
-    description: "Full tracksuit set in white.",
-    image_url: "images/WhatsApp Image 2026-10-10 at 22.56.41.jpeg",
+    name: "Deep Cleaning",
+    category: "deep",
+    label: "Deep clean",
+    description: "A deep clean you can trust. Kitchens, bathrooms, appliances and hard-to-reach spots.",
+    image_url: "",
+    packages: ["Standard deep clean", "Move-in / move-out", "Post-construction"],
     position: 3
   },
   {
-    name: "Frontier Jersey",
-    category: "jerseys",
-    label: "Jersey",
-    index_label: "Jerseys / 01",
-    description: "Signature Internal Frontier jersey.",
-    image_url: "images/WhatsApp Image 2026-10-10 at 22.56.39.jpeg",
+    name: "Window & Surface Cleaning",
+    category: "window",
+    label: "Streak-free",
+    description: "Streak-free. Spotless. Interior and exterior windows, glass and surfaces.",
+    image_url: "",
+    packages: ["Up to 10 windows", "10 to 20 windows", "Full premises"],
     position: 4
+  },
+  {
+    name: "Sanitization & Disinfection",
+    category: "sanitization",
+    label: "Healthier spaces",
+    description: "Healthier spaces, safer lives. Sanitizing and disinfection for homes and offices.",
+    image_url: "",
+    packages: ["Home treatment", "Office treatment"],
+    position: 5
   }
 ];
-
-const SEED_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
-
 let schemaPromise = null;
 
 // Makes sure tables exist. Safe to call on every request; only does real work
@@ -243,11 +249,11 @@ function ensureSchema() {
             [product.name, product.description, product.category, product.label, product.image_url, product.position]
           );
           const productId = inserted.rows[0].id;
-          for (const size of SEED_SIZES) {
+          for (const option of product.packages || ["Standard"]) {
             await query(
               `INSERT INTO product_variants (product_id, size, colour, stock)
-               VALUES ($1, $2, '', 0)`,
-              [productId, size]
+               VALUES ($1, $2, '', 99)`,
+              [productId, option]
             );
           }
         }

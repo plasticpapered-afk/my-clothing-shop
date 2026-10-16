@@ -18,7 +18,7 @@
   const pollNote = document.getElementById("poll-note");
   const errorBox = document.getElementById("error-box");
 
-  const waMessage = encodeURIComponent(`Hi Internal Frontier, about order ${reference} ($${total}). `);
+  const waMessage = encodeURIComponent(`Hi Dust Patrol, about booking ${reference} ($${total}). `);
 
   function setError(message) {
     if (!errorBox) return;
@@ -32,7 +32,7 @@
     } else if (method === "innbucks") {
       instructions.innerHTML = "Open the InnBucks app and approve the payment with this code:";
     } else {
-      instructions.innerHTML = "We have your order. Our team will confirm payment and delivery with you on WhatsApp.";
+      instructions.innerHTML = "We have your booking. Our team will confirm payment and your cleaning date with you on WhatsApp.";
     }
   }
 

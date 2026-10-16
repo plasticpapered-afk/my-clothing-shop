@@ -3,401 +3,737 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Internal Frontier: expressive everyday clothing. Explore the collection and build a WhatsApp enquiry.">
-  <meta name="theme-color" content="#173c32">
-  <title>INTERNAL FRONTIER | Wear what moves you</title>
-  <link rel="icon" href="images/WhatsApp%20Image%202026-10-10%20at%2022.56.44.jpeg" type="image/jpeg">
+  <meta name="description" content="Dust Patrol Cleaning Services by KHAR-ECE Consortium. Residential, commercial, deep cleaning, windows and sanitization in Harare. Book online and pay with EcoCash.">
+  <title>Dust Patrol Cleaning Services — Clean Spaces. Stronger Impact.</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
   <style>
     :root {
-      color-scheme: light;
-      --ink: #1d2925;
-      --forest: #173c32;
-      --forest-light: #285648;
-      --paper: #f5f3eb;
-      --white: #fffefa;
-      --lime: #d4e66d;
-      --coral: #ed7956;
-      --muted: #6a736e;
-      --line: #d8dcd2;
-      --display: "Barlow Condensed", Impact, sans-serif;
-      --body: "DM Sans", sans-serif;
+      --pink: #E91E63;
+      --pink-deep: #C2185B;
+      --pink-soft: #FCE4EC;
+      --charcoal: #1A1A1A;
+      --ink: #262626;
+      --muted: #6B6B6B;
+      --paper: #FFFFFF;
+      --blush: #FFF7FA;
+      --line: rgba(26, 26, 26, 0.1);
+      --radius: 18px;
+      --shadow: 0 10px 30px rgba(26, 26, 26, 0.09);
+      --shadow-lg: 0 22px 60px rgba(26, 26, 26, 0.16);
+      --font-body: "Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;
+      --font-display: "Montserrat", system-ui, sans-serif;
+      --font-serif: "Playfair Display", Georgia, serif;
     }
 
     * { box-sizing: border-box; }
     [hidden] { display: none !important; }
+
     html { scroll-behavior: smooth; }
-    body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--body); }
-    button, input, select { font: inherit; }
-    button, a, select { -webkit-tap-highlight-color: transparent; }
+
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    img { max-width: 100%; display: block; }
     a { color: inherit; }
-    button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--coral); outline-offset: 3px; }
+    button { font-family: inherit; cursor: pointer; }
+    input, select, textarea { font-family: inherit; }
 
-    .announcement { padding: 9px 20px; background: var(--lime); color: var(--ink); text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
-    .site-header { position: sticky; z-index: 10; top: 0; display: flex; min-height: 76px; align-items: center; justify-content: space-between; gap: 24px; padding: 0 6.5%; background: var(--white); border-bottom: 1px solid var(--line); }
-    .wordmark { color: var(--forest); font-family: var(--display); font-size: 30px; font-weight: 800; line-height: .88; text-decoration: none; letter-spacing: .4px; }
-    .wordmark span { display: block; color: var(--coral); font-family: var(--body); font-size: 8px; font-weight: 700; letter-spacing: 2.2px; margin-top: 6px; }
-    .nav-links { display: flex; align-items: center; gap: 32px; }
-    .nav-links a { font-size: 12px; font-weight: 700; text-decoration: none; text-transform: uppercase; letter-spacing: .8px; }
-    .nav-links a:hover { color: var(--forest-light); }
-    .bag-button { min-height: 42px; padding: 0 16px; border: 1px solid var(--forest); background: var(--forest); color: white; cursor: pointer; font-size: 12px; font-weight: 700; }
-    .bag-button:hover, .primary-button:hover { background: var(--forest-light); }
+    .sr-only {
+      position: absolute; width: 1px; height: 1px;
+      clip: rect(1px, 1px, 1px, 1px); clip-path: inset(50%);
+      overflow: hidden; white-space: nowrap;
+    }
 
-    .hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; min-height: 540px; align-items: center; gap: 38px; overflow: hidden; padding: 50px 9%; background: var(--forest); color: white; }
-    .hero-copy { position: relative; z-index: 1; max-width: 700px; animation: arrive .7s ease-out both; }
-    .hero-feature-image { display: block; width: min(30vw, 330px); max-height: 460px; object-fit: contain; object-position: center; justify-self: end; box-shadow: 0 18px 45px rgba(0, 0, 0, .2); animation: image-arrive .85s .12s cubic-bezier(.2, .75, .25, 1) both; }
-    .eyebrow { display: flex; align-items: center; gap: 10px; color: var(--lime); font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
-    .eyebrow::before { width: 26px; height: 2px; background: var(--coral); content: ""; }
-    .hero h1 { max-width: 680px; margin: 18px 0 16px; font-family: var(--display); font-size: clamp(58px, 8vw, 104px); font-weight: 800; line-height: .83; text-transform: uppercase; }
-    .hero p { max-width: 410px; margin: 0; color: rgba(255, 255, 255, .84); font-size: 15px; line-height: 1.7; }
-    .primary-button { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; margin-top: 27px; padding: 0 21px; background: var(--lime); color: var(--ink); font-size: 12px; font-weight: 700; text-decoration: none; text-transform: uppercase; letter-spacing: .8px; transition: background .2s, transform .2s; }
-    .primary-button:hover { transform: translateY(-2px); background: white; }
-    .hero .primary-button { background: var(--lime); }
+    /* ---------- Header ---------- */
 
-    .manifesto { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; padding: 60px 9%; background: var(--forest); color: white; }
-    .manifesto h2 { max-width: 470px; margin: 0; font-family: var(--display); font-size: 48px; line-height: .95; text-transform: uppercase; }
-    .manifesto p { max-width: 470px; margin: 0; color: #d7e0da; font-size: 14px; line-height: 1.8; }
+    .site-header {
+      position: sticky; top: 0; z-index: 40;
+      background: rgba(255, 255, 255, 0.86);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--line);
+    }
 
-    .shop-section { padding: 76px 7% 88px; }
-    .section-top { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
-    .section-top h2 { margin: 5px 0 0; font-family: var(--display); font-size: 50px; line-height: .9; text-transform: uppercase; }
-    .section-top p { margin: 10px 0 0; color: var(--muted); font-size: 13px; }
-    .shop-controls { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 25px; padding: 13px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-    .filters { display: flex; flex-wrap: wrap; gap: 5px; }
-    .filter-button { min-height: 34px; padding: 0 13px; border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-    .filter-button[aria-pressed="true"] { background: var(--forest); color: white; }
-    .search-wrap { display: flex; width: min(240px, 100%); align-items: center; gap: 8px; border-bottom: 1px solid #89928c; }
-    .search-wrap span { color: var(--forest); font-size: 17px; }
-    .search-wrap input { width: 100%; min-width: 0; height: 35px; border: 0; background: transparent; color: var(--ink); font-size: 12px; outline: none; }
-    .product-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 34px 20px; }
-    .product { min-width: 0; }
-    .product[hidden] { display: none; }
-    .product-image { position: relative; overflow: hidden; background: #e1e3d9; aspect-ratio: 4 / 4.7; }
-    .product-image img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .45s; }
-    .product:hover .product-image img { transform: scale(1.035); }
-    .product-label { position: absolute; top: 12px; left: 12px; padding: 7px 9px; background: var(--lime); color: var(--ink); font-size: 9px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; }
-    .product-info { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 14px 0 0; }
-    .product-category { grid-column: 1 / -1; color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
-    .product h3 { margin: 4px 0 0; font-size: 15px; font-weight: 700; }
-    .product-price { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
-    .product-actions { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(95px, .72fr) 1fr; gap: 8px; margin-top: 10px; }
-    .size-select { min-width: 0; height: 42px; padding: 0 10px; border: 1px solid var(--line); background: var(--white); color: var(--ink); font-size: 11px; }
-    .add-button { min-height: 42px; padding: 0 12px; border: 1px solid var(--forest); background: transparent; color: var(--forest); cursor: pointer; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
-    .add-button:hover { background: var(--forest); color: white; }
-    .empty-results { grid-column: 1 / -1; padding: 50px 10px; color: var(--muted); text-align: center; }
+    .header-inner {
+      max-width: 1180px; margin: 0 auto; padding: 14px 22px;
+      display: flex; align-items: center; gap: 18px;
+    }
 
-    .story { display: grid; grid-template-columns: .9fr 1.1fr; min-height: 370px; background: #e7e9dc; }
-    .story-image { min-height: 300px; background: #425e4f url("images/WhatsApp%20Image%202026-10-10%20at%2022.56.40.jpeg") center 42% / cover; }
-    .story-copy { align-self: center; max-width: 570px; padding: 54px 12%; }
-    .story-copy h2 { margin: 12px 0 14px; font-family: var(--display); font-size: 49px; line-height: .9; text-transform: uppercase; }
-    .story-copy p { margin: 0; color: #4d5c54; font-size: 13px; line-height: 1.8; }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
 
-    .site-footer { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: end; padding: 35px 7%; background: #142b25; color: white; }
-    .footer-brand { font-family: var(--display); font-size: 27px; font-weight: 700; }
-    .site-footer p { margin: 5px 0 0; color: #c9d4cc; font-size: 11px; }
-    .footer-meta { color: #c9d4cc; font-size: 10px; line-height: 1.8; text-align: right; }
-    .footer-meta a { color: var(--lime); }
+    .brand-mark {
+      width: 44px; height: 44px; flex: 0 0 auto;
+      border-radius: 14px; background: var(--charcoal); color: #fff;
+      display: grid; place-items: center; position: relative;
+    }
 
-    .drawer-backdrop { position: fixed; z-index: 19; inset: 0; background: rgba(17, 29, 24, .5); opacity: 0; transition: opacity .2s; }
-    .drawer-backdrop[hidden] { display: none; }
-    .bag-drawer { position: fixed; z-index: 20; top: 0; right: 0; display: flex; width: min(430px, 100%); height: 100dvh; flex-direction: column; padding: 25px; background: var(--white); box-shadow: -12px 0 35px rgba(16, 33, 26, .15); transform: translateX(102%); transition: transform .25s ease; }
+    .brand-mark svg { width: 26px; height: 26px; }
+
+    .brand-name { display: flex; flex-direction: column; line-height: 1.15; }
+    .brand-name strong { font-weight: 900; letter-spacing: 0.06em; font-size: 15px; color: var(--charcoal); }
+    .brand-name span { font-size: 9.5px; letter-spacing: 0.34em; color: var(--pink); font-weight: 700; text-transform: uppercase; }
+
+    .header-nav { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .header-nav a.nav-link {
+      text-decoration: none; font-size: 12.5px; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase; color: var(--charcoal);
+      padding: 9px 12px; border-radius: 999px; transition: background 0.2s, color 0.2s;
+    }
+    .header-nav a.nav-link:hover { background: var(--pink-soft); color: var(--pink-deep); }
+
+    .header-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--pink); color: #fff; border: none;
+      padding: 11px 18px; border-radius: 999px;
+      font-size: 12.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+      text-decoration: none; box-shadow: 0 8px 20px rgba(233, 30, 99, 0.32);
+      transition: transform 0.15s, box-shadow 0.15s, background 0.2s;
+    }
+    .header-cta:hover { transform: translateY(-1px); background: var(--pink-deep); box-shadow: 0 12px 26px rgba(233, 30, 99, 0.4); }
+
+    /* ---------- Hero ---------- */
+
+    .hero { position: relative; overflow: hidden; background: linear-gradient(115deg, var(--blush) 0%, #fff 55%, var(--pink-soft) 100%); }
+
+    .hero-inner {
+      max-width: 1180px; margin: 0 auto; padding: 64px 22px 80px;
+      display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 48px; align-items: center;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--font-serif); font-style: italic;
+      color: var(--ink); font-size: 17px; margin: 0 0 6px;
+    }
+    .hero-eyebrow b { color: var(--pink); font-style: normal; font-family: var(--font-body); letter-spacing: 0.18em; font-size: 12px; font-weight: 800; }
+
+    .hero h1 {
+      margin: 0; color: var(--charcoal);
+      font-size: clamp(44px, 7vw, 76px); line-height: 0.98; font-weight: 900;
+      letter-spacing: -0.01em;
+    }
+    .hero h1 span { color: var(--pink); }
+
+    .hero-tagline {
+      display: inline-block; margin: 20px 0 14px;
+      background: var(--pink); color: #fff;
+      padding: 11px 20px; border-radius: 12px;
+      font-weight: 800; font-size: 14.5px; letter-spacing: 0.14em; text-transform: uppercase;
+      box-shadow: 0 10px 24px rgba(233, 30, 99, 0.35);
+    }
+
+    .hero-sub { max-width: 480px; color: var(--muted); font-size: 16px; margin: 0 0 26px; }
+
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--charcoal); color: #fff; text-decoration: none;
+      padding: 15px 26px; border-radius: 999px; border: none;
+      font-weight: 800; font-size: 13.5px; letter-spacing: 0.06em; text-transform: uppercase;
+      box-shadow: 0 12px 28px rgba(26, 26, 26, 0.28);
+      transition: transform 0.15s, background 0.2s;
+    }
+    .btn-primary:hover { transform: translateY(-2px); background: var(--pink); }
+
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: #fff; color: var(--charcoal); text-decoration: none;
+      padding: 15px 26px; border-radius: 999px;
+      border: 1.5px solid var(--charcoal);
+      font-weight: 800; font-size: 13.5px; letter-spacing: 0.06em; text-transform: uppercase;
+      transition: background 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .btn-ghost:hover { background: var(--charcoal); color: #fff; }
+
+    .hero-media { position: relative; }
+    .hero-media .hero-frame {
+      border-radius: 26px; overflow: hidden; box-shadow: var(--shadow-lg);
+      clip-path: polygon(0 0, 100% 4%, 100% 100%, 4% 96%);
+      border: 6px solid #fff;
+      transform: rotate(1.2deg);
+    }
+    .hero-media img { width: 100%; height: 420px; object-fit: cover; }
+    .hero-badge {
+      position: absolute; left: -14px; bottom: 26px;
+      background: #fff; border-radius: 16px; box-shadow: var(--shadow);
+      padding: 12px 18px; display: flex; gap: 10px; align-items: center;
+      font-size: 12.5px; font-weight: 700; color: var(--charcoal);
+    }
+    .hero-badge .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--pink); box-shadow: 0 0 0 4px var(--pink-soft); }
+
+    /* ---------- Trust strip ---------- */
+
+    .trust-strip { background: var(--charcoal); color: #fff; }
+    .trust-inner {
+      max-width: 1180px; margin: 0 auto; padding: 16px 22px;
+      display: flex; flex-wrap: wrap; gap: 12px 34px; justify-content: center;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+    }
+    .trust-inner span { display: inline-flex; align-items: center; gap: 8px; color: rgba(255, 255, 255, 0.85); }
+    .trust-inner span::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--pink); }
+
+    /* ---------- Sections ---------- */
+
+    .section { max-width: 1180px; margin: 0 auto; padding: 76px 22px 30px; }
+
+    .section-top { text-align: center; margin-bottom: 34px; }
+    .section-top .kicker {
+      display: inline-block; background: var(--pink-soft); color: var(--pink-deep);
+      font-size: 11px; font-weight: 800; letter-spacing: 0.22em; text-transform: uppercase;
+      padding: 7px 14px; border-radius: 999px; margin-bottom: 14px;
+    }
+    .section-top h2 { margin: 0; font-size: clamp(26px, 4vw, 40px); font-weight: 900; color: var(--charcoal); letter-spacing: -0.01em; }
+    .section-top p { color: var(--muted); margin: 10px auto 0; max-width: 560px; }
+
+    /* ---------- Services icons ---------- */
+
+    .services-icons { display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; }
+
+    .service-icon-card {
+      background: #fff; border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 28px 18px 22px; text-align: center;
+      box-shadow: var(--shadow); transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .service-icon-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+
+    .service-icon-card .icon {
+      width: 74px; height: 74px; margin: 0 auto 16px;
+      border-radius: 50%; background: linear-gradient(135deg, var(--pink), var(--pink-deep));
+      display: grid; place-items: center; color: #fff;
+      box-shadow: 0 12px 26px rgba(233, 30, 99, 0.35);
+    }
+    .service-icon-card .icon svg { width: 34px; height: 34px; }
+    .service-icon-card h3 { margin: 0 0 6px; font-size: 15px; font-weight: 800; color: var(--charcoal); }
+    .service-icon-card p { margin: 0; font-size: 13px; color: var(--muted); }
+
+    /* ---------- Catalogue ---------- */
+
+    .shop-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px; margin-bottom: 26px; }
+
+    .filters { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+
+    .filter-button {
+      border: 1.5px solid var(--line); background: #fff; color: var(--charcoal);
+      padding: 9px 16px; border-radius: 999px;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      transition: all 0.18s;
+    }
+    .filter-button:hover { border-color: var(--pink); color: var(--pink-deep); }
+    .filter-button[aria-pressed="true"] { background: var(--charcoal); border-color: var(--charcoal); color: #fff; }
+
+    .search-wrap {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #fff; border: 1.5px solid var(--line); border-radius: 999px;
+      padding: 9px 16px; min-width: 220px;
+    }
+    .search-wrap span[aria-hidden] { color: var(--pink); font-weight: 800; }
+    .search-wrap input { border: none; outline: none; font-size: 14px; width: 100%; background: transparent; }
+
+    .result-meta { text-align: center; color: var(--muted); font-size: 13px; font-weight: 600; margin: 18px 0 0; }
+
+    .product-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; margin-top: 26px;
+    }
+
+    .product {
+      background: #fff; border: 1px solid var(--line); border-radius: 22px;
+      overflow: hidden; display: flex; flex-direction: column;
+      box-shadow: var(--shadow); transition: transform 0.2s, box-shadow 0.2s, opacity 0.4s;
+    }
+    .product:hover { transform: translateY(-8px); box-shadow: var(--shadow-lg); }
+
+    .product-image { position: relative; height: 200px; background: linear-gradient(135deg, var(--charcoal), #333); overflow: hidden; }
+    .product-image img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.35s; }
+    .product:hover .product-image img { transform: scale(1.05); }
+
+    .product-image .service-glyph { height: 100%; display: grid; place-items: center; color: rgba(255, 255, 255, 0.92); }
+    .product-image .service-glyph svg { width: 52px; height: 52px; }
+
+    .product-label {
+      position: absolute; left: 14px; top: 14px;
+      background: var(--pink); color: #fff;
+      font-size: 10.5px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase;
+      padding: 6px 12px; border-radius: 999px; box-shadow: 0 6px 16px rgba(233, 30, 99, 0.4);
+    }
+
+    .product-info { padding: 20px 20px 22px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+    .product-category { font-size: 10.5px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; color: var(--pink); }
+    .product-info h3 { margin: 0; font-size: 19px; font-weight: 800; color: var(--charcoal); }
+    .product-price { margin: 0; font-size: 14.5px; font-weight: 700; color: var(--muted); }
+    .product-price strong { color: var(--charcoal); }
+
+    .product-actions { display: flex; gap: 10px; margin-top: auto; padding-top: 12px; }
+
+    .size-select {
+      flex: 1; min-width: 0; padding: 11px 12px; border-radius: 12px;
+      border: 1.5px solid var(--line); background: #fff; font-size: 13px; font-weight: 600; color: var(--charcoal);
+    }
+    .size-select:focus { outline: 2px solid var(--pink); border-color: transparent; }
+
+    .add-button {
+      background: var(--pink); border: none; color: #fff;
+      padding: 11px 16px; border-radius: 12px; white-space: nowrap;
+      font-size: 12.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
+      transition: background 0.2s, transform 0.15s; box-shadow: 0 8px 18px rgba(233, 30, 99, 0.3);
+    }
+    .add-button:hover { background: var(--pink-deep); transform: translateY(-1px); }
+
+    #empty-results { text-align: center; color: var(--muted); padding: 46px 10px; font-weight: 600; }
+
+    /* ---------- How it works ---------- */
+
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+    .step-card {
+      background: var(--blush); border-radius: var(--radius); padding: 26px 24px;
+      border: 1px solid rgba(233, 30, 99, 0.14);
+    }
+    .step-card .num {
+      display: inline-grid; place-items: center;
+      width: 40px; height: 40px; border-radius: 12px;
+      background: var(--charcoal); color: #fff; font-weight: 900; font-size: 16px;
+      margin-bottom: 14px;
+    }
+    .step-card h3 { margin: 0 0 6px; font-size: 16.5px; font-weight: 800; color: var(--charcoal); }
+    .step-card p { margin: 0; color: var(--muted); font-size: 13.5px; }
+    .step-card p b { color: var(--pink-deep); }
+
+    /* ---------- Footer ---------- */
+
+    .site-footer { background: var(--charcoal); color: #fff; margin-top: 80px; }
+    .footer-inner {
+      max-width: 1180px; margin: 0 auto; padding: 54px 22px 40px;
+      display: grid; grid-template-columns: 1.2fr auto 1fr; gap: 30px; align-items: center;
+    }
+    .footer-tag { font-size: 19px; font-weight: 900; letter-spacing: 0.04em; line-height: 1.35; }
+    .footer-tag span { color: var(--pink); }
+
+    .footer-cta {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: var(--pink); color: #fff; text-decoration: none;
+      padding: 16px 26px; border-radius: 999px; white-space: nowrap;
+      font-size: 13.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase;
+      box-shadow: 0 14px 34px rgba(233, 30, 99, 0.45);
+      transition: transform 0.15s, background 0.2s;
+    }
+    .footer-cta:hover { transform: translateY(-2px); background: var(--pink-deep); }
+
+    .footer-contact { display: flex; flex-direction: column; gap: 10px; font-size: 13.5px; align-items: flex-start; }
+    .footer-contact a { text-decoration: none; color: rgba(255, 255, 255, 0.85); display: inline-flex; align-items: center; gap: 10px; transition: color 0.2s; }
+    .footer-contact a:hover { color: var(--pink); }
+    .footer-contact .globe::before { content: "🌐 "; }
+    .footer-contact .pin::before { content: "📍 "; }
+    .footer-contact .mail::before { content: "✉️ "; }
+
+    .footer-bottom { border-top: 1px solid rgba(255, 255, 255, 0.12); }
+    .footer-bottom-inner {
+      max-width: 1180px; margin: 0 auto; padding: 18px 22px;
+      display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between;
+      font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255, 255, 255, 0.5); font-weight: 600;
+    }
+
+    /* ---------- Booking drawer ---------- */
+
+    .drawer-backdrop {
+      position: fixed; inset: 0; z-index: 48;
+      background: rgba(26, 26, 26, 0.55); backdrop-filter: blur(3px);
+    }
+
+    .bag-drawer {
+      position: fixed; top: 0; right: 0; bottom: 0; z-index: 49;
+      width: min(420px, 100%);
+      background: #fff; box-shadow: -18px 0 60px rgba(26, 26, 26, 0.25);
+      display: flex; flex-direction: column;
+      transform: translateX(105%); transition: transform 0.32s cubic-bezier(0.22, 0.9, 0.3, 1);
+    }
     .bag-drawer.is-open { transform: translateX(0); }
-    .drawer-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
-    .drawer-header h2 { margin: 0; font-family: var(--display); font-size: 34px; text-transform: uppercase; }
-    .icon-button { width: 40px; height: 40px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; font-size: 22px; }
-    .bag-items { flex: 1; overflow: auto; }
-    .bag-empty { padding: 32px 0; color: var(--muted); font-size: 13px; line-height: 1.7; }
-    .bag-item { display: grid; grid-template-columns: 64px 1fr auto; gap: 12px; align-items: center; padding: 15px 0; border-bottom: 1px solid var(--line); }
-    .bag-item img { width: 64px; height: 76px; object-fit: cover; background: var(--paper); }
-    .bag-item h3 { margin: 0 0 5px; font-size: 12px; }
-    .bag-item p { margin: 0; color: var(--muted); font-size: 10px; }
-    .remove-item { border: 0; background: transparent; color: #8b4935; cursor: pointer; font-size: 10px; text-decoration: underline; }
-    .drawer-footer { padding-top: 16px; border-top: 1px solid var(--line); }
-    .drawer-footer p { margin: 0 0 12px; color: var(--muted); font-size: 11px; line-height: 1.6; }
-    .whatsapp-button { display: flex; width: 100%; min-height: 48px; align-items: center; justify-content: center; border: 0; background: var(--forest); color: white; cursor: pointer; font-size: 11px; font-weight: 700; text-decoration: none; text-transform: uppercase; letter-spacing: .6px; }
-    .whatsapp-button:disabled { background: #aab2ab; cursor: not-allowed; }
-    .toast { position: fixed; z-index: 30; right: 22px; bottom: 22px; max-width: calc(100% - 44px); padding: 13px 18px; background: var(--forest); color: white; font-size: 12px; opacity: 0; pointer-events: none; transform: translateY(10px); transition: opacity .2s, transform .2s; }
-    .toast.is-visible { opacity: 1; transform: translateY(0); }
-    #site-checkout { margin-bottom: 8px; }
-    #bag-total-line { margin: 0 0 10px; font-weight: 700; color: var(--forest); }
-    .checkout-overlay { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 20px 14px; background: rgba(19, 30, 26, .58); overflow-y: auto; }
-    .checkout-card { position: relative; width: min(470px, 100%); background: var(--white); border: 1px solid var(--line); padding: 26px 22px 22px; }
-    .checkout-card h2 { margin: 0 0 4px; font-family: var(--display); font-size: 34px; font-weight: 800; line-height: .95; text-transform: uppercase; color: var(--forest); }
-    .checkout-card .checkout-sub { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
-    .checkout-field { display: block; margin-bottom: 13px; font-size: 12px; font-weight: 600; }
-    .checkout-field span { display: block; margin-bottom: 5px; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); }
-    .checkout-field input { width: 100%; min-height: 42px; padding: 8px 10px; border: 1px solid var(--line); background: #fff; font: inherit; }
-    .payment-choices { display: grid; gap: 8px; margin: 4px 0 16px; }
-    .payment-choice { display: flex; gap: 10px; align-items: center; border: 1px solid var(--line); padding: 11px 12px; cursor: pointer; background: #fff; }
-    .payment-choice:has(input:checked) { border-color: var(--forest); background: #f2f5ec; }
-    .payment-choice input { width: 18px; height: 18px; accent-color: var(--forest); }
-    .payment-choice strong { display: block; font-size: 13px; }
-    .payment-choice small { color: var(--muted); font-size: 11px; }
-    .checkout-error { display: none; margin: 0 0 12px; padding: 10px 12px; background: #f8eae5; border: 1px solid #e5b8ab; color: #b3402a; font-size: 13px; }
+
+    .drawer-head { padding: 20px 22px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; }
+    .drawer-head h2 { margin: 0; font-size: 16px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; color: var(--charcoal); }
+    .drawer-close {
+      margin-left: auto; border: none; background: var(--pink-soft); color: var(--pink-deep);
+      width: 34px; height: 34px; border-radius: 10px; font-size: 17px; line-height: 1;
+    }
+
+    .bag-items { flex: 1; overflow-y: auto; padding: 16px 22px; display: flex; flex-direction: column; gap: 12px; }
+
+    .bag-row {
+      display: grid; grid-template-columns: 58px 1fr auto; gap: 12px; align-items: center;
+      background: var(--blush); border: 1px solid rgba(233, 30, 99, 0.12);
+      border-radius: 14px; padding: 10px 12px;
+    }
+    .bag-thumb { width: 58px; height: 58px; border-radius: 10px; object-fit: cover; background: var(--charcoal); }
+    .bag-name { font-size: 13.5px; font-weight: 800; color: var(--charcoal); margin: 0; }
+    .bag-size, .bag-price { font-size: 12px; color: var(--muted); margin: 2px 0 0; }
+    .bag-remove {
+      border: none; background: transparent; color: var(--muted); font-size: 16px; padding: 6px;
+    }
+
+    .empty-bag { color: var(--muted); text-align: center; font-weight: 600; padding: 40px 12px; }
+
+    .drawer-footer { padding: 18px 22px 24px; border-top: 1px solid var(--line); }
+    .drawer-footer p.hint { margin: 0 0 12px; font-size: 12px; color: var(--muted); }
+    .whatsapp-button {
+      display: block; width: 100%; text-align: center; text-decoration: none;
+      background: var(--charcoal); color: #fff; border: none;
+      padding: 14px; border-radius: 999px;
+      font-size: 13px; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase;
+      transition: background 0.2s, transform 0.15s;
+    }
+    .whatsapp-button:hover { background: var(--pink); transform: translateY(-1px); }
+    .whatsapp-button:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+    #site-checkout { margin-bottom: 10px; background: var(--pink); box-shadow: 0 10px 22px rgba(233, 30, 99, 0.32); }
+    #site-checkout:hover { background: var(--pink-deep); }
+    #bag-total-line { margin: 0 0 12px; font-weight: 800; color: var(--pink-deep); font-size: 14.5px; }
+
+    /* ---------- Chat ---------- */
+
+    .chat-launcher {
+      position: fixed; right: 18px; bottom: 18px; z-index: 46;
+      background: var(--pink); color: #fff; border: none;
+      width: 54px; height: 54px; border-radius: 50%;
+      box-shadow: 0 14px 30px rgba(233, 30, 99, 0.45);
+      display: grid; place-items: center; font-size: 21px;
+      transition: transform 0.15s;
+    }
+    .chat-launcher:hover { transform: scale(1.07); }
+
+    .chat-panel {
+      position: fixed; right: 18px; bottom: 84px; z-index: 47;
+      width: min(340px, calc(100vw - 36px));
+      background: #fff; border-radius: 20px; box-shadow: var(--shadow-lg);
+      display: flex; flex-direction: column; overflow: hidden;
+      max-height: 70vh;
+    }
+    .chat-head { background: var(--charcoal); color: #fff; padding: 14px 16px; display: flex; align-items: center; gap: 10px; }
+    .chat-head .status-dot { width: 9px; height: 9px; background: #4CE38A; border-radius: 50%; box-shadow: 0 0 0 3px rgba(76, 227, 138, 0.25); }
+    .chat-head strong { font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; }
+    .chat-head small { color: rgba(255, 255, 255, 0.65); margin-left: auto; font-size: 11px; }
+    .chat-head button { margin-left: 8px; background: rgba(255,255,255,0.12); color: #fff; border: none; width: 26px; height: 26px; border-radius: 8px; }
+
+    .chat-log { flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: var(--blush); }
+    .chat-msg { max-width: 82%; padding: 10px 14px; border-radius: 14px; font-size: 13.5px; line-height: 1.5; }
+    .chat-msg.user { align-self: flex-end; background: var(--charcoal); color: #fff; border-bottom-right-radius: 4px; }
+    .chat-msg.bot { align-self: flex-start; background: #fff; color: var(--ink); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+
+    .chat-form { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--line); background: #fff; }
+    .chat-form input { flex: 1; padding: 11px 14px; border-radius: 999px; border: 1.5px solid var(--line); font-size: 13.5px; }
+    .chat-form input:focus { outline: 2px solid var(--pink); border-color: transparent; }
+    .chat-form button { background: var(--pink); border: none; color: #fff; border-radius: 999px; padding: 0 18px; font-weight: 800; font-size: 13px; }
+
+    /* ---------- Checkout overlay ---------- */
+
+    #site-checkout { margin-bottom: 10px; }
+
+    .checkout-overlay {
+      position: fixed; inset: 0; z-index: 60;
+      background: rgba(26, 26, 26, 0.6); backdrop-filter: blur(4px);
+      overflow-y: auto; padding: 28px 16px;
+      display: grid; place-items: center;
+    }
+
+    .checkout-card {
+      width: min(480px, 100%); background: #fff;
+      border-radius: 24px; padding: 30px 26px; position: relative;
+      box-shadow: var(--shadow-lg);
+    }
+    .checkout-card h2 { margin: 0 0 4px; font-size: 22px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; color: var(--charcoal); }
+    .checkout-sub { margin: 0 0 16px; color: var(--muted); font-size: 13.5px; }
+    .checkout-summary {
+      background: var(--blush); border: 1px solid rgba(233, 30, 99, 0.14);
+      padding: 12px 16px; border-radius: 12px; font-size: 14px; font-weight: 700; color: var(--charcoal); margin-bottom: 16px;
+    }
+    .checkout-close { position: absolute; top: 14px; right: 14px; border: none; background: var(--pink-soft); color: var(--pink-deep); width: 32px; height: 32px; border-radius: 10px; font-size: 16px; }
+
+    .checkout-field { display: block; margin-bottom: 14px; font-size: 13px; font-weight: 700; color: var(--charcoal); }
+    .checkout-field input {
+      width: 100%; margin-top: 6px; padding: 13px 14px;
+      border-radius: 12px; border: 1.5px solid var(--line); font-size: 14px; background: #fff;
+    }
+    .checkout-field input:focus { outline: 2px solid var(--pink); border-color: transparent; }
+
+    .payment-choices { display: grid; gap: 10px; margin: 6px 0 18px; }
+    .payment-choice {
+      display: flex; gap: 12px; align-items: flex-start;
+      border: 1.5px solid var(--line); border-radius: 14px; padding: 13px 14px; cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .payment-choice:has(input:checked) { border-color: var(--pink); background: var(--blush); }
+    .payment-choice input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--pink); }
+    .payment-choice span { display: flex; flex-direction: column; gap: 2px; font-size: 14px; }
+    .payment-choice strong { font-weight: 800; }
+    .payment-choice small { color: var(--muted); font-weight: 600; }
+
+    .checkout-error { display: none; background: #FDECEC; color: #9C2727; border: 1px solid #F3C4C4; border-radius: 12px; padding: 11px 14px; font-size: 13px; font-weight: 600; margin-bottom: 14px; }
     .checkout-error.is-visible { display: block; }
-    .checkout-summary { margin: 0 0 16px; padding: 12px 14px; background: var(--paper); border: 1px solid var(--line); font-size: 14px; }
-    .checkout-summary strong { color: var(--forest); }
-    .checkout-success-ref { margin: 6px 0 2px; font-family: var(--display); font-size: 30px; font-weight: 800; color: var(--forest); letter-spacing: .5px; }
-    .checkout-close { position: absolute; top: 8px; right: 10px; border: 0; background: transparent; font-size: 26px; line-height: 1; color: var(--muted); cursor: pointer; }
-    .checkout-primary { display: inline-flex; min-height: 46px; align-items: center; justify-content: center; width: 100%; margin-top: 6px; padding: 0 18px; border: 0; background: var(--forest); color: white; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; }
-    .checkout-primary:hover { background: var(--forest-light); }
-    .checkout-secondary { display: block; margin-top: 10px; background: none; border: none; color: var(--muted); font-size: 12px; text-decoration: underline; cursor: pointer; }
 
-    .chat-widget { position: fixed; z-index: 18; right: 22px; bottom: 22px; display: grid; justify-items: end; gap: 12px; }
-    .chat-launcher { display: inline-flex; min-height: 54px; align-items: center; gap: 11px; padding: 0 19px; border: 0; border-radius: 3px; background: var(--coral); box-shadow: 0 8px 24px rgba(21, 42, 34, .2); color: white; cursor: pointer; font-size: 12px; font-weight: 700; }
-    .chat-launcher:hover { background: #d96543; }
-    .chat-icon { position: relative; width: 19px; height: 16px; border: 2px solid currentColor; border-radius: 5px; }
-    .chat-icon::after { position: absolute; bottom: -5px; left: 3px; width: 6px; height: 6px; border-bottom: 2px solid currentColor; transform: skewY(-38deg); content: ""; }
-    .chat-panel { display: flex; width: min(360px, calc(100vw - 32px)); max-height: min(540px, calc(100dvh - 112px)); flex-direction: column; overflow: hidden; border: 1px solid var(--line); border-radius: 5px; background: var(--white); box-shadow: 0 18px 50px rgba(18, 40, 31, .24); transform-origin: bottom right; animation: chat-enter .16s ease-out both; }
-    .chat-panel[hidden] { display: none; }
-    .chat-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 17px 18px; background: var(--forest); color: white; }
-    .chat-brand { display: flex; align-items: center; gap: 11px; }
-    .chat-mark { display: grid; width: 36px; height: 36px; place-items: center; background: var(--lime); color: var(--forest); font-family: var(--display); font-size: 15px; font-weight: 800; }
-    .chat-brand strong { display: block; font-family: var(--display); font-size: 20px; line-height: 1; text-transform: uppercase; }
-    .chat-status { display: flex; align-items: center; gap: 6px; margin-top: 5px; color: #d7e0da; font-size: 9px; }
-    .chat-status::before { width: 6px; height: 6px; border-radius: 50%; background: var(--lime); content: ""; }
-    .chat-close { width: 34px; height: 34px; border: 1px solid rgba(255, 255, 255, .35); background: transparent; color: white; cursor: pointer; font-size: 20px; }
-    .chat-log { display: flex; min-height: 155px; flex: 1; flex-direction: column; gap: 12px; overflow-y: auto; padding: 18px; background: #f8f8f3; }
-    .chat-message { max-width: 88%; padding: 11px 12px; border-radius: 3px; font-size: 11px; line-height: 1.6; white-space: pre-wrap; overflow-wrap: anywhere; }
-    .chat-message-assistant { align-self: flex-start; border: 1px solid var(--line); background: white; color: var(--ink); }
-    .chat-message-user { align-self: flex-end; background: var(--forest); color: white; }
-    .chat-help { padding: 13px 18px 0; color: var(--muted); font-size: 10px; line-height: 1.5; }
-    .chat-whatsapp { display: inline-block; margin-top: 5px; color: var(--forest); font-weight: 700; text-underline-offset: 2px; }
-    .chat-form { display: grid; grid-template-columns: 1fr 42px; gap: 8px; padding: 13px 18px 17px; }
-    .chat-input { min-width: 0; height: 42px; padding: 0 11px; border: 1px solid var(--line); background: white; color: var(--ink); font-size: 11px; }
-    .chat-send { display: grid; width: 42px; height: 42px; place-items: center; border: 0; background: var(--coral); color: white; cursor: pointer; font-size: 18px; }
-    .chat-send:hover { background: #d96543; }
-    @keyframes chat-enter { from { opacity: 0; transform: translateY(7px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
-    @keyframes image-arrive { from { opacity: 0; transform: translateY(16px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
-    .motion-enabled .scroll-reveal { opacity: 0; transform: translateY(18px); transition: opacity .55s ease, transform .55s cubic-bezier(.2, .7, .25, 1); }
-    .motion-enabled .scroll-reveal.is-visible { opacity: 1; transform: translateY(0); }
-    .motion-enabled .product.scroll-reveal { transition-delay: var(--reveal-delay, 0ms); }
-    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
-
-    @keyframes arrive { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-    @media (max-width: 760px) {
-      .site-header { min-height: 68px; padding: 0 5%; }
-      .nav-links { gap: 15px; }
-      .nav-links a { font-size: 10px; }
-      .wordmark { font-size: 26px; }
-      .hero { min-height: 500px; gap: 24px; padding: 48px 7%; }
-      .hero-feature-image { width: min(32vw, 280px); max-height: 400px; }
-      .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 14px; }
-      .shop-section { padding: 60px 5% 68px; }
-      .manifesto { padding: 46px 7%; }
+    .checkout-primary {
+      display: block; width: 100%; border: none;
+      background: var(--pink); color: #fff; padding: 15px; border-radius: 999px;
+      font-size: 13.5px; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase;
+      box-shadow: 0 12px 26px rgba(233, 30, 99, 0.35);
+      transition: background 0.2s, transform 0.15s; text-align: center; text-decoration: none;
     }
-    @media (max-width: 520px) {
-      .announcement { font-size: 9px; }
-      .site-header { flex-wrap: wrap; gap: 0; padding: 13px 5%; }
-      .nav-links { order: 3; width: 100%; justify-content: space-between; padding-top: 13px; }
-      .bag-button { min-height: 38px; padding: 0 11px; }
-      .hero { grid-template-columns: minmax(0, 1fr) minmax(112px, .72fr); min-height: 430px; gap: 12px; padding: 38px 5%; }
-      .hero-feature-image { width: 100%; max-height: 300px; }
-      .hero h1 { font-size: clamp(42px, 11vw, 58px); }
-      .hero p { max-width: 330px; font-size: 12px; }
-      .hero .primary-button { min-height: 42px; padding: 0 12px; font-size: 10px; }
-      .manifesto { grid-template-columns: 1fr; gap: 15px; padding: 39px 6%; }
-      .manifesto h2 { font-size: 40px; }
-      .section-top { display: block; }
-      .section-top h2 { font-size: 44px; }
-      .shop-controls { align-items: stretch; flex-direction: column-reverse; }
-      .search-wrap { width: 100%; }
-      .filters { gap: 2px; }
-      .filter-button { padding: 0 9px; font-size: 10px; }
-      .product-grid { gap: 25px 11px; }
-      .product-image { aspect-ratio: 3 / 4; }
-      .product h3 { font-size: 13px; }
-      .product-actions { grid-template-columns: 1fr; }
-      .size-select, .add-button { min-height: 39px; }
-      .story { grid-template-columns: 1fr; }
-      .story-image { min-height: 260px; }
-      .story-copy { padding: 38px 7%; }
-      .story-copy h2 { font-size: 43px; }
-      .site-footer { grid-template-columns: 1fr; }
-      .footer-meta { text-align: left; }
-      #site-checkout { margin-bottom: 8px; }
-    #bag-total-line { margin: 0 0 10px; font-weight: 700; color: var(--forest); }
-    .checkout-overlay { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 20px 14px; background: rgba(19, 30, 26, .58); overflow-y: auto; }
-    .checkout-card { position: relative; width: min(470px, 100%); background: var(--white); border: 1px solid var(--line); padding: 26px 22px 22px; }
-    .checkout-card h2 { margin: 0 0 4px; font-family: var(--display); font-size: 34px; font-weight: 800; line-height: .95; text-transform: uppercase; color: var(--forest); }
-    .checkout-card .checkout-sub { margin: 0 0 18px; color: var(--muted); font-size: 13px; }
-    .checkout-field { display: block; margin-bottom: 13px; font-size: 12px; font-weight: 600; }
-    .checkout-field span { display: block; margin-bottom: 5px; font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); }
-    .checkout-field input { width: 100%; min-height: 42px; padding: 8px 10px; border: 1px solid var(--line); background: #fff; font: inherit; }
-    .payment-choices { display: grid; gap: 8px; margin: 4px 0 16px; }
-    .payment-choice { display: flex; gap: 10px; align-items: center; border: 1px solid var(--line); padding: 11px 12px; cursor: pointer; background: #fff; }
-    .payment-choice:has(input:checked) { border-color: var(--forest); background: #f2f5ec; }
-    .payment-choice input { width: 18px; height: 18px; accent-color: var(--forest); }
-    .payment-choice strong { display: block; font-size: 13px; }
-    .payment-choice small { color: var(--muted); font-size: 11px; }
-    .checkout-error { display: none; margin: 0 0 12px; padding: 10px 12px; background: #f8eae5; border: 1px solid #e5b8ab; color: #b3402a; font-size: 13px; }
-    .checkout-error.is-visible { display: block; }
-    .checkout-summary { margin: 0 0 16px; padding: 12px 14px; background: var(--paper); border: 1px solid var(--line); font-size: 14px; }
-    .checkout-summary strong { color: var(--forest); }
-    .checkout-success-ref { margin: 6px 0 2px; font-family: var(--display); font-size: 30px; font-weight: 800; color: var(--forest); letter-spacing: .5px; }
-    .checkout-close { position: absolute; top: 8px; right: 10px; border: 0; background: transparent; font-size: 26px; line-height: 1; color: var(--muted); cursor: pointer; }
-    .checkout-primary { display: inline-flex; min-height: 46px; align-items: center; justify-content: center; width: 100%; margin-top: 6px; padding: 0 18px; border: 0; background: var(--forest); color: white; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; }
-    .checkout-primary:hover { background: var(--forest-light); }
-    .checkout-secondary { display: block; margin-top: 10px; background: none; border: none; color: var(--muted); font-size: 12px; text-decoration: underline; cursor: pointer; }
+    .checkout-primary:hover { background: var(--pink-deep); transform: translateY(-1px); }
+    .checkout-primary:disabled { opacity: 0.55; cursor: wait; transform: none; }
 
-    .chat-widget { right: 14px; bottom: 14px; }
-      .chat-launcher { min-height: 50px; padding: 0 15px; }
-      .chat-panel { max-height: calc(100dvh - 88px); }
+    .checkout-secondary {
+      display: block; width: 100%; margin-top: 10px; text-align: center;
+      background: transparent; border: none; color: var(--muted);
+      padding: 12px; font-weight: 700; font-size: 13px; text-decoration: none;
+    }
+    .checkout-secondary:hover { color: var(--charcoal); }
+
+    .checkout-success-ref {
+      font-size: 26px; font-weight: 900; letter-spacing: 0.04em; color: var(--charcoal);
+      background: var(--pink-soft); border-radius: 12px; padding: 12px; text-align: center; margin: 10px 0 14px;
     }
 
-    /* ===== Refresh: photo hero + softer rounded look ===== */
-    :root { --radius: 14px; --radius-sm: 10px; --radius-pill: 999px; }
-    .hero { position: relative; display: flex; min-height: min(78vh, 680px); align-items: center; padding: 60px 8%; background: #1b0f2e url("images/hero-banner.jpg") right center / cover no-repeat; }
-    .hero::before { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(20, 8, 38, .55) 0%, rgba(20, 8, 38, .18) 48%, rgba(20, 8, 38, 0) 70%); content: ""; }
-    .hero-copy { position: relative; z-index: 1; max-width: 520px; }
-    .hero h1 { text-shadow: 0 4px 24px rgba(20, 8, 38, .35); }
-    .hero p { color: rgba(255, 255, 255, .92); }
-    .hero .primary-button { background: var(--lime); }
+    .availability-note { display: none; background: #FFF3E0; border: 1px solid #FFE0B2; color: #8D5B00; border-radius: 12px; padding: 10px 14px; font-size: 13px; font-weight: 600; margin: 10px 0 14px; }
+    .availability-note.is-visible { display: block; }
 
-    .primary-button, .bag-button, .add-button, .whatsapp-button, .filter-button, .chat-launcher, .chat-send, .chat-close, .remove-item { border-radius: var(--radius-pill); }
-    .size-select, .chat-input, .search-wrap { border-radius: var(--radius-sm); }
-    .search-wrap { padding: 0 12px; border: 1px solid var(--line); background: var(--white); }
-    .size-select { border: 1px solid var(--line); }
-    .product-image, .story-image { border-radius: var(--radius); }
-    .product-label { border-radius: var(--radius-pill); padding: 7px 12px; }
-    .chat-panel { border-radius: 18px; }
-    .chat-message { border-radius: 14px; }
-    .chat-mark { border-radius: 10px; }
-    .bag-drawer { border-radius: 20px 0 0 20px; }
-    .bag-item img { border-radius: var(--radius-sm); }
-    .toast { border-radius: var(--radius-pill); }
-    .story { margin: 0 4% 60px; overflow: hidden; border-radius: 22px; }
-    .story-image { border-radius: 0; }
-    .site-footer { border-radius: 22px 22px 0 0; }
-    .chat-send { width: 42px; border-radius: 50%; }
-    .chat-input { padding: 0 14px; }
+    /* ---------- Toast ---------- */
 
-    @media (max-width: 520px) {
-      .hero { min-height: 520px; padding: 44px 6%; background-image: url("images/hero-banner-mobile.jpg"); background-position: center top; align-items: flex-end; }
-      .hero::before { background: linear-gradient(0deg, rgba(20, 8, 38, .78) 0%, rgba(20, 8, 38, .25) 55%, rgba(20, 8, 38, 0) 100%); }
-      .hero h1 { font-size: clamp(46px, 14vw, 64px); }
-      .hero p { max-width: 100%; font-size: 13px; }
-      .story { margin: 0 3% 40px; }
-      .bag-drawer { border-radius: 20px 0 0 20px; }
+    #toast {
+      position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(20px);
+      background: var(--charcoal); color: #fff; z-index: 70;
+      padding: 13px 22px; border-radius: 999px; font-size: 13.5px; font-weight: 700;
+      box-shadow: var(--shadow-lg); opacity: 0; pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s; max-width: calc(100vw - 40px); text-align: center;
     }
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
+    #toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ---------- Reveal animation ---------- */
+
+    @media (prefers-reduced-motion: no-preference) {
+      .product { opacity: 0; transform: translateY(18px); }
+      .product.is-revealed { opacity: 1; transform: none; transition: opacity 0.55s ease, transform 0.55s ease; }
+    }
+
+    /* ---------- Responsive ---------- */
+
+    @media (max-width: 1020px) {
+      .services-icons { grid-template-columns: repeat(3, 1fr); }
+      .product-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 860px) {
+      .hero-inner { grid-template-columns: 1fr; padding-top: 44px; gap: 34px; }
+      .hero-media img { height: 300px; }
+      .hero-badge { left: 8px; }
+      .steps { grid-template-columns: 1fr; }
+      .footer-inner { grid-template-columns: 1fr; text-align: center; gap: 22px; }
+      .footer-contact { align-items: center; }
+      .header-nav a.nav-link { display: none; }
+    }
+
+    @media (max-width: 620px) {
+      .services-icons { grid-template-columns: repeat(2, 1fr); }
+      .product-grid { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 13.5vw; }
+      .header-cta { padding: 10px 14px; font-size: 11px; }
     }
   </style>
 </head>
 <body>
-  <div class="announcement">INTERNAL FRONTIER / ONLY TRUST GOD</div>
+
   <header class="site-header">
-    <a class="wordmark" href="#top" aria-label="Internal Frontier home">INTERNAL<br>FRONTIER<span>ONLY TRUST GOD</span></a>
-    <nav class="nav-links" aria-label="Main navigation">
-      <a href="#shop">Shop all</a>
-      <a href="#story">Our story</a>
-    </nav>
-    <button class="bag-button" id="open-bag" type="button" aria-haspopup="dialog">Inquiry bag <span id="bag-count">0</span></button>
+    <div class="header-inner">
+      <a class="brand" href="#top" aria-label="Dust Patrol Cleaning Services home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 8l4-4 5 5 5-5 4 4-5 5 5 5-4 4-5-5-5 5-4-4 5-5z"/>
+            <circle cx="12" cy="12" r="1.6" fill="currentColor"/>
+          </svg>
+        </span>
+        <span class="brand-name">
+          <strong>DUST PATROL</strong>
+          <span>Cleaning Services</span>
+        </span>
+      </a>
+      <nav class="header-nav">
+        <a class="nav-link" href="#services">Services</a>
+        <a class="nav-link" href="#book">Book now</a>
+        <a class="nav-link" href="#how">How it works</a>
+        <a class="header-cta" href="#book">Book a cleaning</a>
+      </nav>
+    </div>
   </header>
 
   <main id="top">
-    <section class="hero" aria-labelledby="hero-title">
-      <div class="hero-copy">
-        <div class="eyebrow">Built from the inside out</div>
-        <h1 id="hero-title">Internal<br>Frontier</h1>
-        <p>Clothing for the road you make yourself. Everyday pieces, considered details, and room to move your own way.</p>
-        <a class="primary-button" href="#shop">Shop the collection</a>
-      </div>
-    </section>
-
-    <section class="manifesto" aria-label="Our point of view">
-      <h2>Only trust God.<br>Move with purpose.</h2>
-      <p>Internal Frontier is a reminder to stay grounded while you find your own direction. Made for everyday movement, personal expression, and the journeys still ahead.</p>
-    </section>
-
-    <section class="shop-section" id="shop">
-      <div class="section-top">
+    <section class="hero">
+      <div class="hero-inner">
         <div>
-          <div class="eyebrow" style="color: var(--forest);">The current line</div>
-          <h2>Find your frontier</h2>
-          <p>Choose a piece and size to add it to your enquiry.</p>
+          <p class="hero-eyebrow">by <b>KHAR-ECE</b> Consortium</p>
+          <h1>DUST<br>PATROL<span>.</span></h1>
+          <p class="hero-tagline">Clean spaces. Stronger impact.</p>
+          <p class="hero-sub">Professional residential and commercial cleaning across Harare. Book your clean online, confirm on WhatsApp, and pay with EcoCash, InnBucks, bank transfer or cash.</p>
+          <div class="hero-actions">
+            <a class="btn-primary" href="#book">Book a cleaning</a>
+            <a class="btn-ghost" href="https://wa.me/263774502737" target="_blank" rel="noopener noreferrer">Chat on WhatsApp</a>
+          </div>
         </div>
-        <p id="result-count" aria-live="polite">4 pieces</p>
+        <div class="hero-media">
+          <div class="hero-frame">
+            <img src="images/dust-patrol-hero.jpg" alt="A bright, freshly cleaned modern living room" fetchpriority="high">
+          </div>
+          <div class="hero-badge"><span class="dot" aria-hidden="true"></span>Sparkling results, every visit</div>
+        </div>
       </div>
-      <div class="shop-controls">
-        <div class="filters" role="group" aria-label="Filter products">
-          <button class="filter-button" type="button" data-filter="all" aria-pressed="true">All pieces</button>
-          <button class="filter-button" type="button" data-filter="tops" aria-pressed="false">Tops</button>
-          <button class="filter-button" type="button" data-filter="sets" aria-pressed="false">Tracksuits</button>
-          <button class="filter-button" type="button" data-filter="jerseys" aria-pressed="false">Jerseys</button>
+      <div class="trust-strip">
+        <div class="trust-inner">
+          <span>Harare based</span>
+          <span>Residential &amp; commercial</span>
+          <span>Deep-clean specialists</span>
+          <span>Pay with EcoCash</span>
         </div>
-        <label class="search-wrap"><span aria-hidden="true">⌕</span><span class="sr-only">Search the collection</span><input id="product-search" type="search" placeholder="Search the collection"></label>
+      </div>
+    </section>
+
+    <section class="section" id="services">
+      <div class="section-top">
+        <span class="kicker">What we do</span>
+        <h2>Our Professional Services</h2>
+        <p>Five ways we make your space cleaner, healthier and more impressive.</p>
+      </div>
+      <div class="services-icons">
+        <div class="service-icon-card">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg></span>
+          <h3>Residential Cleaning</h3>
+          <p>Homes that shine.</p>
+        </div>
+        <div class="service-icon-card">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2"/></svg></span>
+          <h3>Commercial Cleaning</h3>
+          <p>Workspaces that impress.</p>
+        </div>
+        <div class="service-icon-card">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 3c-2 4-6 6-10 6l2 3c3-1 6-4 8-9z"/><path d="M8 10l-4 9c4 0 7-2 9-5"/><path d="M4 19h7"/></svg></span>
+          <h3>Deep Cleaning</h3>
+          <p>A deep clean you can trust.</p>
+        </div>
+        <div class="service-icon-card">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></svg></span>
+          <h3>Window &amp; Surfaces</h3>
+          <p>Streak-free. Spotless.</p>
+        </div>
+        <div class="service-icon-card">
+          <span class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span>
+          <h3>Sanitization</h3>
+          <p>Healthier spaces, safer lives.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="book">
+      <div class="section-top">
+        <span class="kicker">Book &amp; pay online</span>
+        <h2>Choose Your Clean</h2>
+        <p>Pick a service, add it to your booking, then check out and pay. Cash, bank transfer and WhatsApp confirmation also available.</p>
+      </div>
+
+      <div class="shop-controls">
+        <div class="filters" role="group" aria-label="Filter services">
+          <button class="filter-button" type="button" data-filter="all" aria-pressed="true">All services</button>
+          <button class="filter-button" type="button" data-filter="residential" aria-pressed="false">Residential</button>
+          <button class="filter-button" type="button" data-filter="commercial" aria-pressed="false">Commercial</button>
+          <button class="filter-button" type="button" data-filter="deep" aria-pressed="false">Deep clean</button>
+          <button class="filter-button" type="button" data-filter="window" aria-pressed="false">Windows</button>
+          <button class="filter-button" type="button" data-filter="sanitization" aria-pressed="false">Sanitization</button>
+        </div>
+        <label class="search-wrap"><span aria-hidden="true">⌕</span><span class="sr-only">Search the services</span><input id="product-search" type="search" placeholder="Search services"></label>
       </div>
 
       <div class="product-grid" id="product-grid">
-        <article class="product" data-category="tops" data-name="Silent Wars graphic tee">
-          <div class="product-image"><img src="images/WhatsApp%20Image%202026-10-10%20at%2022.56.42.jpeg" alt="Model wearing the Internal Frontier Silent Wars graphic tee" loading="lazy"><span class="product-label">Graphic tee</span></div>
-          <div class="product-info"><span class="product-category">Tops / 01</span><h3>Silent Wars Graphic Tee</h3><p class="product-price">Price on request</p><div class="product-actions"><label><span class="sr-only">Choose size for Silent Wars Graphic Tee</span><select class="size-select" aria-label="Size for Silent Wars Graphic Tee"><option value="">Choose size</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></label><button class="add-button" type="button">Add to enquiry</button></div></div>
+        <article class="product" data-category="residential" data-name="residential cleaning">
+          <div class="product-image"><img src="images/dust-patrol-hero.jpg" alt="A bright, freshly cleaned modern living room" loading="lazy"><span class="product-label">Home visit</span></div>
+          <div class="product-info"><span class="product-category">Residential / 01</span><h3>Residential Cleaning</h3><p class="product-price">Price on request</p><div class="product-actions"><label><span class="sr-only">Choose a package</span><select class="size-select"><option value="" selected>Choose package</option><option>1 bedroom</option><option>2 bedrooms</option><option>3 bedrooms</option><option>4+ bedrooms</option></select></label><button class="add-button" type="button">Add to booking</button></div></div>
         </article>
-        <article class="product" data-category="sets" data-name="Black frontier tracksuit">
-          <div class="product-image"><img src="images/WhatsApp%20Image%202026-10-10%20at%2022.56.42%20(1).jpeg" alt="Model in a black Internal Frontier tracksuit" loading="lazy"><span class="product-label">Tracksuit</span></div>
-          <div class="product-info"><span class="product-category">Tracksuits / 01</span><h3>Black Frontier Tracksuit</h3><p class="product-price">Price on request</p><div class="product-actions"><label><span class="sr-only">Choose size for Black Frontier Tracksuit</span><select class="size-select" aria-label="Size for Black Frontier Tracksuit"><option value="">Choose size</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></label><button class="add-button" type="button">Add to enquiry</button></div></div>
+        <article class="product" data-category="commercial" data-name="commercial cleaning">
+          <div class="product-image"><img src="images/dust-patrol-hero.jpg" alt="A clean, bright workspace" loading="lazy"><span class="product-label">Workspace</span></div>
+          <div class="product-info"><span class="product-category">Commercial / 02</span><h3>Commercial Cleaning</h3><p class="product-price">Price on request</p><div class="product-actions"><label><span class="sr-only">Choose a package</span><select class="size-select"><option value="" selected>Choose package</option><option>Small office</option><option>Medium office</option><option>Large premises</option></select></label><button class="add-button" type="button">Add to booking</button></div></div>
         </article>
-        <article class="product" data-category="sets" data-name="White frontier tracksuit">
-          <div class="product-image"><img src="images/WhatsApp%20Image%202026-10-10%20at%2022.56.41.jpeg" alt="Two models wearing white Internal Frontier tracksuits" loading="lazy"><span class="product-label">Tracksuit</span></div>
-          <div class="product-info"><span class="product-category">Tracksuits / 02</span><h3>White Frontier Tracksuit</h3><p class="product-price">Price on request</p><div class="product-actions"><label><span class="sr-only">Choose size for White Frontier Tracksuit</span><select class="size-select" aria-label="Size for White Frontier Tracksuit"><option value="">Choose size</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></label><button class="add-button" type="button">Add to enquiry</button></div></div>
+        <article class="product" data-category="deep" data-name="deep cleaning">
+          <div class="product-image"><img src="images/dust-patrol-hero.jpg" alt="A deep cleaned kitchen" loading="lazy"><span class="product-label">Deep clean</span></div>
+          <div class="product-info"><span class="product-category">Deep / 03</span><h3>Deep Cleaning</h3><p class="product-price">Price on request</p><div class="product-actions"><label><span class="sr-only">Choose a package</span><select class="size-select"><option value="" selected>Choose package</option><option>Standard deep clean</option><option>Move-in / move-out</option><option>Post-construction</option></select></label><button class="add-button" type="button">Add to booking</button></div></div>
         </article>
-        <article class="product" data-category="jerseys" data-name="Frontier jersey">
-          <div class="product-image"><img src="images/WhatsApp%20Image%202026-10-10%20at%2022.56.39.jpeg" alt="Model wearing the Internal Frontier jersey" loading="lazy"><span class="product-label">Jersey</span></div>
-          <div class="product-info"><span class="product-category">Jerseys / 01</span><h3>Frontier Jersey</h3><p class="product-price">Price on request</p><div class="product-actions"><label><span class="sr-only">Choose size for Frontier Jersey</span><select class="size-select" aria-label="Size for Frontier Jersey"><option value="">Choose size</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option></select></label><button class="add-button" type="button">Add to enquiry</button></div></div>
-        </article>
-        <p class="empty-results" id="empty-results" hidden>No pieces match that search. Try another name or category.</p>
       </div>
+      <p id="empty-results" hidden>No services match your search.</p>
+      <p class="result-meta" id="result-count" aria-live="polite">3 services</p>
     </section>
 
-    <section class="story" id="story">
-      <div class="story-image" role="img" aria-label="Two models wearing white Internal Frontier tracksuits in a bar setting"></div>
-      <div class="story-copy">
-        <div class="eyebrow" style="color: var(--forest);">The Internal Frontier point of view</div>
-        <h2>Wear your own direction.</h2>
-        <p>We believe what you wear can be a quiet kind of confidence. Internal Frontier brings together dependable essentials and distinctive details, made to feel like you.</p>
-        <a class="primary-button" href="#shop">Shop the line</a>
+    <section class="section" id="how">
+      <div class="section-top">
+        <span class="kicker">Simple process</span>
+        <h2>How It Works</h2>
+      </div>
+      <div class="steps">
+        <div class="step-card"><span class="num">1</span><h3>Pick your service</h3><p>Choose the cleaning you need and the package that fits your space, then check out on the site.</p></div>
+        <div class="step-card"><span class="num">2</span><h3>Pay your way</h3><p>Approve an <b>EcoCash</b> or <b>InnBucks</b> prompt on your phone, or choose bank transfer / cash on the day.</p></div>
+        <div class="step-card"><span class="num">3</span><h3>We clean</h3><p>Our vetted team arrives on the confirmed date. You get a receipt, and spaces that set the standard.</p></div>
       </div>
     </section>
   </main>
 
   <footer class="site-footer">
-    <div><div class="footer-brand">INTERNAL FRONTIER</div><p>Only trust God. Move with purpose.</p></div>
-    <div class="footer-meta"><div><a href="https://wa.me/263789973632" target="_blank" rel="noopener noreferrer">Message us on WhatsApp</a></div><div>© 2026 Internal Frontier</div></div>
+    <div class="footer-inner">
+      <p class="footer-tag">SPACES WE CLEAN.<br><span>STANDARDS WE SET.</span></p>
+      <a class="footer-cta" href="tel:+263774502737">☎ Book your cleaning today! +263 774 502 737</a>
+      <div class="footer-contact">
+        <a class="globe" href="https://www.kharece.co.za" target="_blank" rel="noopener noreferrer">www.kharece.co.za</a>
+        <span class="pin">Harare, Zimbabwe</span>
+        <a class="mail" href="mailto:munashealtawine@gmail.com">munashealtawine@gmail.com</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-bottom-inner">
+        <span>Dust Patrol Cleaning Services · KHAR-ECE Consortium</span>
+        <span>Clean spaces. Stronger impact.</span>
+      </div>
+    </div>
   </footer>
 
-  <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
-  <aside class="bag-drawer" id="bag-drawer" role="dialog" aria-modal="true" aria-labelledby="bag-title" aria-hidden="true" inert>
-    <div class="drawer-header"><h2 id="bag-title">Your enquiry</h2><button class="icon-button" id="close-bag" type="button" aria-label="Close inquiry bag">×</button></div>
-    <div class="bag-items" id="bag-items" aria-live="polite"></div>
-    <div class="drawer-footer"><p>Prices and availability are confirmed directly with Internal Frontier.</p><p id="bag-total-line" hidden></p><button class="whatsapp-button" id="site-checkout" type="button" disabled>Check out on the site</button><button class="whatsapp-button" id="send-enquiry" type="button" disabled>Ask on WhatsApp</button></div>
-  </aside>
-  <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <div class="chat-widget">
-    <section class="chat-panel" id="chat-panel" role="dialog" aria-labelledby="chat-title" aria-hidden="true" hidden inert>
-      <div class="chat-header">
-        <div class="chat-brand">
-          <div class="chat-mark" aria-hidden="true">IF</div>
-          <div><strong id="chat-title">Internal Frontier</strong><span class="chat-status">AI assistant online</span></div>
-        </div>
-        <button class="chat-close" id="close-chat" type="button" aria-label="Close chat">×</button>
-      </div>
-      <div class="chat-log" id="chat-log" role="log" aria-live="polite" aria-relevant="additions">
-        <div class="chat-message chat-message-assistant">Welcome to Internal Frontier. I can help with sizing, the current collection, and next steps. Ask me anything about the line.</div>
-      </div>
-      <div class="chat-help">For a quick reply, message our team directly.<br><a class="chat-whatsapp" href="https://wa.me/263789973632" target="_blank" rel="noopener noreferrer">Continue on WhatsApp</a></div>
-      <form class="chat-form" id="chat-form">
-        <label class="sr-only" for="chat-input">Write a message</label>
-        <input class="chat-input" id="chat-input" name="message" type="text" maxlength="500" placeholder="Write a message..." autocomplete="off" required>
-        <button class="chat-send" type="submit" aria-label="Send message">↑</button>
-      </form>
-    </section>
-    <button class="chat-launcher" id="open-chat" type="button" aria-haspopup="dialog" aria-controls="chat-panel" aria-expanded="false"><span class="chat-icon" aria-hidden="true"></span><span>Chat with us</span></button>
-  </div>
+  <button class="chat-launcher" id="open-chat" type="button" aria-expanded="false" aria-label="Chat with us">💬</button>
 
-  <script src="/app.js"></script>
+  <section class="chat-panel" id="chat-panel" hidden aria-label="Chat with Dust Patrol">
+    <div class="chat-head">
+      <span class="status-dot" aria-hidden="true"></span>
+      <strong>Chat with us</strong>
+      <small>Online</small>
+      <button id="close-chat" type="button" aria-label="Close chat">✕</button>
+    </div>
+    <div class="chat-log" id="chat-log" aria-live="polite"></div>
+    <form class="chat-form" id="chat-form">
+      <label><span class="sr-only">Your message</span><input id="chat-input" type="text" placeholder="Ask about our services…" autocomplete="off"></label>
+      <button type="submit">Send</button>
+    </form>
+  </section>
+
+  <div class="drawer-backdrop" id="drawer-backdrop" hidden></div>
+
+  <aside class="bag-drawer" id="bag-drawer" aria-hidden="true" aria-label="Your booking">
+    <div class="drawer-head">
+      <h2>Your booking</h2>
+      <button class="drawer-close" id="close-bag" type="button" aria-label="Close booking">✕</button>
+    </div>
+    <div class="bag-items" id="bag-items"></div>
+    <div class="drawer-footer">
+      <p class="hint">Dates and times are confirmed on WhatsApp after you book.</p>
+      <p id="bag-total-line" hidden></p>
+      <button class="whatsapp-button" id="site-checkout" type="button" disabled>Check out on the site</button>
+      <button class="whatsapp-button" id="send-enquiry" type="button" disabled>Ask on WhatsApp</button>
+    </div>
+  </aside>
+
+  <div id="toast" role="status"></div>
+
+  <script src="app.js" defer></script>
 </body>
 </html>

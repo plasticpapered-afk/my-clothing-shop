@@ -20,7 +20,7 @@ const {
 
 const router = express.Router();
 
-const CATEGORY_OPTIONS = ["tops", "sets", "jerseys", "accessories"];
+const CATEGORY_OPTIONS = ["residential", "commercial", "deep", "window", "sanitization"];
 const ORDER_STATUSES = ["new", "confirmed", "dispatched", "delivered", "cancelled"];
 const NEXT_STATUS = {
   new: ["confirmed", "cancelled"],
@@ -294,7 +294,7 @@ router.post("/api/admin/products", requireDatabase, requireStaff, async (req, re
   const body = req.body || {};
   const name = text(body.name);
   if (name.length < 2) return bad(res, "Give the product a name.");
-  const category = CATEGORY_OPTIONS.includes(body.category) ? body.category : "tops";
+  const category = CATEGORY_OPTIONS.includes(body.category) ? body.category : "residential";
   const price = money(body.base_price);
   if (price === undefined) return bad(res, "Enter a valid price, or leave it empty for price on request.");
   const inserted = await db.query(
@@ -584,7 +584,7 @@ router.post("/api/admin/orders", requireDatabase, requireStaff, async (req, res)
       // 3. Create the order with a unique reference.
       const order = await client.query(
         `INSERT INTO orders (reference, customer_id, customer_name, customer_phone, total, notes)
-         VALUES ('IF-' || to_char(now(), 'YYMM') || '-' || lpad(nextval('order_ref_seq')::text, 4, '0'),
+         VALUES ('DP-' || to_char(now(), 'YYMM') || '-' || lpad(nextval('order_ref_seq')::text, 4, '0'),
                  $1, $2, $3, $4, $5)
          RETURNING *`,
         [customerId, customerName, customerPhone, total, text(body.notes)]
@@ -880,7 +880,7 @@ router.post("/api/checkout", requireDatabase, async (req, res) => {
 
       const order = await client.query(
         `INSERT INTO orders (reference, customer_id, customer_name, customer_phone, total, notes, payment_method)
-         VALUES ('IF-' || to_char(now(), 'YYMM') || '-' || lpad(nextval('order_ref_seq')::text, 4, '0'),
+         VALUES ('DP-' || to_char(now(), 'YYMM') || '-' || lpad(nextval('order_ref_seq')::text, 4, '0'),
                  $1, $2, $3, $4, $5, $6)
          RETURNING id, reference, total, payment_method`,
         [customerId, name, phone, total, location ? `Delivery: ${location}` : "", method]
@@ -916,7 +916,7 @@ router.post("/api/checkout", requireDatabase, async (req, res) => {
         const initiated = await paynow.initiateExpress({
           reference: created.reference,
           amount: Number(created.total),
-          description: `Internal Frontier order ${created.reference}`,
+          description: `Dust Patrol booking ${created.reference}`,
           authEmail,
           phone: mobilePhone,
           method,
@@ -1036,7 +1036,7 @@ router.post("/api/payments/paynow/retry", requireDatabase, async (req, res) => {
     const initiated = await paynow.initiateExpress({
       reference: order.reference,
       amount: Number(order.total),
-      description: `Internal Frontier order ${order.reference}`,
+      description: `Dust Patrol booking ${order.reference}`,
       authEmail,
       phone,
       method: order.payment_method,

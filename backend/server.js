@@ -38,7 +38,7 @@ app.get("/health", async (req, res) => {
     await db.query("SELECT 1");
     res.json({
       status: "ok",
-      service: "Internal Frontier API",
+      service: "Dust Patrol API",
       database: "connected"
     });
   } catch (error) {
@@ -161,7 +161,7 @@ function receiptHtml(order, items) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
-<title>Receipt ${order.reference} | Internal Frontier</title>
+<title>Receipt ${order.reference} | Dust Patrol</title>
 <style>
   * { box-sizing: border-box; }
   body { margin: 0; background: #f5f3eb; font-family: "DM Sans", Arial, sans-serif; color: #1d2925; }
@@ -186,7 +186,7 @@ function receiptHtml(order, items) {
 </head>
 <body>
 <div class="sheet">
-  <div class="brand">INTERNAL FRONTIER</div>
+  <div class="brand">DUST PATROL</div>
   <p class="tagline">Official order receipt</p>
   <h1>Receipt</h1>
   <p class="ref">Reference ${order.reference} · ${new Date(order.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}</p>
@@ -198,7 +198,7 @@ function receiptHtml(order, items) {
   </table>
   <p>Payment method: <strong>${method}</strong></p>
   <span class="status ${paid ? "paid" : "unpaid"}">${paid ? "Paid" : "Payment pending"}</span>
-  <p class="thanks">Thank you for shopping with Internal Frontier. Keep this receipt as proof of your order. For anything about your order, message us on WhatsApp.</p>
+  <p class="thanks">Thank you for choosing Dust Patrol Cleaning Services. Keep this receipt as proof of your booking. For anything about your booking, message us on WhatsApp.</p>
   <button class="print-btn" type="button" id="print-btn">Print / save as PDF</button>
 </div>
 <script src="/receipt.js"></script>
@@ -241,7 +241,7 @@ function statusHtml(order) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
-<title>Order ${order.reference} | Internal Frontier</title>
+<title>Booking ${order.reference} | Dust Patrol</title>
 <style>
   * { box-sizing: border-box; }
   body { margin: 0; background: #f5f3eb; font-family: "DM Sans", Arial, sans-serif; color: #1d2925; }
@@ -268,7 +268,7 @@ function statusHtml(order) {
 </head>
 <body>
 <div class="sheet">
-  <a class="brand" href="/">INTERNAL FRONTIER</a>
+  <a class="brand" href="/">DUST PATROL</a>
   <h1>Payment status</h1>
   <p class="ref">Order ${order.reference}</p>
   <p class="summary">Total <strong>$${Number(order.total).toFixed(2)}</strong> · paying by <strong>${method}</strong></p>
@@ -317,7 +317,7 @@ app.use(adminRouter);
 
 app.get(["/api", "/api/"], (req, res) => {
   res.json({
-    message: "Internal Frontier API",
+    message: "Dust Patrol API",
     health: "/health",
     chat: "/api/chat",
     products: "/api/products",
@@ -327,7 +327,7 @@ app.get(["/api", "/api/"], (req, res) => {
 
 if (require.main === module && !process.env.VERCEL) {
   app.listen(port, "0.0.0.0", () => {
-    console.log(`Internal Frontier API listening on ${port}`);
+    console.log(`Dust Patrol API listening on ${port}`);
   });
 }
 

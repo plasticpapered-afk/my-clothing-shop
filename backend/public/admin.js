@@ -1,4 +1,4 @@
-// Internal Frontier back office. Vanilla JS single page app that talks to
+// Dust Patrol back office. Vanilla JS single page app that talks to
 // /api/admin/... endpoints. No frameworks, no build step.
 
 const els = {
@@ -23,8 +23,8 @@ const state = {
   newOrder: null
 };
 
-const CATEGORY_LABELS = { tops: "Tops", sets: "Tracksuits", jerseys: "Jerseys", accessories: "Accessories", other: "Other" };
-const STATUS_LABELS = { new: "New", confirmed: "Confirmed", dispatched: "Dispatched", delivered: "Delivered", cancelled: "Cancelled" };
+const CATEGORY_LABELS = { residential: "Residential", commercial: "Commercial", deep: "Deep clean", window: "Windows", sanitization: "Sanitization" };
+const STATUS_LABELS = { new: "New", confirmed: "Scheduled", dispatched: "In progress", delivered: "Completed", cancelled: "Cancelled" };
 const STATUS_ACTIONS = {
   new: [["confirmed", "Confirm order"], ["cancelled", "Cancel"]],
   confirmed: [["dispatched", "Mark dispatched"], ["cancelled", "Cancel"]],
@@ -245,15 +245,15 @@ async function renderDashboard() {
     <h2>Dashboard</h2>
     <p class="view-sub">The shop at a glance.</p>
     <div class="stat-grid">
-      <div class="stat"><p class="stat-label">Pieces live on the shop</p><p class="stat-value">${stats.products}</p><p class="stat-note">${stats.variants} sizes in the catalogue</p></div>
-      <div class="stat"><p class="stat-label">Items in stock</p><p class="stat-value">${stats.stock}</p><p class="stat-note">Across all sizes and colours</p></div>
-      <div class="stat"><p class="stat-label">Open orders</p><p class="stat-value">${openOrders}</p><p class="stat-note">New, confirmed or dispatched</p></div>
-      <div class="stat"><p class="stat-label">Paid revenue</p><p class="stat-value">$${Number(stats.revenuePaid || 0).toFixed(2)}</p><p class="stat-note">From orders marked fully paid</p></div>
+      <div class="stat"><p class="stat-label">Services live on the shop</p><p class="stat-value">${stats.products}</p><p class="stat-note">${stats.variants} packages in the catalogue</p></div>
+      <div class="stat"><p class="stat-label">Open capacity</p><p class="stat-value">${stats.stock}</p><p class="stat-note">Across all packages</p></div>
+      <div class="stat"><p class="stat-label">Open bookings</p><p class="stat-value">${openOrders}</p><p class="stat-note">New, confirmed or dispatched</p></div>
+      <div class="stat"><p class="stat-label">Paid revenue</p><p class="stat-value">$${Number(stats.revenuePaid || 0).toFixed(2)}</p><p class="stat-note">From bookings marked fully paid</p></div>
       <div class="stat"><p class="stat-label">Online payments (Paynow)</p><p class="stat-value">${stats.paynowConfigured ? "Connected" : "Off"}</p><p class="stat-note">${stats.paynowConfigured ? "EcoCash and InnBucks are live" : "Add PAYNOW_INTEGRATION_ID and PAYNOW_INTEGRATION_KEY on Vercel, then redeploy"}</p></div>
     </div>
     <div class="grid-2">
       <div class="card">
-        <h3 class="panel-title">Recent orders</h3>
+        <h3 class="panel-title">Recent bookings</h3>
         ${stats.recentOrders.length === 0
           ? `<p class="empty mt0">No orders yet. They appear here as soon as you take one.</p>`
           : `<div class="table-wrap"><table><thead><tr><th>Reference</th><th>Customer</th><th class="num">Total</th><th>Status</th></tr></thead><tbody>
@@ -267,7 +267,7 @@ async function renderDashboard() {
             </tbody></table></div>`}
       </div>
       <div class="card">
-        <h3 class="panel-title">Low stock (2 or fewer)</h3>
+        <h3 class="panel-title">Low capacity (2 or fewer)</h3>
         ${stats.lowStock.length === 0
           ? `<p class="empty mt0">Nothing is running low.</p>`
           : `<ul class="inline-list">${stats.lowStock.map((item) => `
@@ -304,14 +304,14 @@ async function renderProducts() {
   );
   const view = document.getElementById("view-products");
   view.innerHTML = `
-    <h2>Products</h2>
-    <p class="view-sub">Manage the pieces on your shop. Stock is tracked per size and colour.</p>
+    <h2>Services</h2>
+    <p class="view-sub">Manage the cleaning services on your shop. Capacity is tracked per package.</p>
     <div class="toolbar">
-      <label class="field grow" style="margin:0"><span>Search</span><input type="search" id="product-search" value="${escapeHtml(state.productSearch)}" placeholder="Search products"></label>
-      <button class="btn" id="add-product">Add product</button>
+      <label class="field grow" style="margin:0"><span>Search</span><input type="search" id="product-search" value="${escapeHtml(state.productSearch)}" placeholder="Search services"></label>
+      <button class="btn" id="add-product">Add service</button>
     </div>
     <div class="table-wrap"><table>
-      <thead><tr><th></th><th>Product</th><th>Category</th><th class="num">Price</th><th class="num">Stock</th><th>Status</th><th></th></tr></thead>
+      <thead><tr><th></th><th>Service</th><th>Category</th><th class="num">Price</th><th class="num">Capacity</th><th>Status</th><th></th></tr></thead>
       <tbody>
         ${filtered.length === 0 ? `<tr><td colspan="7" class="empty">No products yet. Add your first piece.</td></tr>` : ""}
         ${filtered.map((product) => `
@@ -347,7 +347,7 @@ function openProductModal(product) {
   const v = product || { name: "", label: "", category: "tops", description: "", image_url: "", base_price: null, active: true, variants: [] };
   modal.innerHTML = `
     <div class="modal">
-      <div class="modal-title"><h3>${isNew ? "Add product" : "Edit product"}</h3><button class="icon-close" type="button" aria-label="Close">×</button></div>
+      <div class="modal-title"><h3>${isNew ? "Add service" : "Edit service"}</h3><button class="icon-close" type="button" aria-label="Close">×</button></div>
       <div class="form-error"></div>
       <form id="product-form">
         <label class="field"><span>Name</span><input name="name" required maxlength="120" value="${escapeHtml(v.name)}"></label>
@@ -356,9 +356,9 @@ function openProductModal(product) {
             <select name="category">
               ${Object.keys(CATEGORY_LABELS).map((key) => `<option value="${key}" ${v.category === key ? "selected" : ""}>${CATEGORY_LABELS[key]}</option>`).join("")}
             </select></label>
-          <label class="field"><span>Short label (shown on the photo)</span><input name="label" maxlength="40" value="${escapeHtml(v.label)}" placeholder="e.g. Tracksuit"></label>
+          <label class="field"><span>Short label (shown on the card)</span><input name="label" maxlength="40" value="${escapeHtml(v.label)}" placeholder="e.g. Home visit"></label>
         </div>
-        <label class="field"><span>Price in dollars (leave empty for price on request)</span><input name="base_price" type="number" step="0.01" min="0" placeholder="e.g. 25" value="${v.base_price === null || v.base_price === undefined ? "" : v.base_price}"></label>
+        <label class="field"><span>Price in dollars (leave empty for price on request)</span><input name="base_price" type="number" step="0.01" min="0" placeholder="e.g. 30" value="${v.base_price === null || v.base_price === undefined ? "" : v.base_price}"></label>
         <label class="field"><span>Photo (choose from your device, or paste a link)</span>
           <input name="image_url" id="image-url" maxlength="300" value="${escapeHtml(v.image_url)}" placeholder="Choose a photo below">
           <input type="file" id="photo-file" accept="image/jpeg,image/png,image/webp" capture="environment" style="margin-top:8px">
@@ -368,9 +368,9 @@ function openProductModal(product) {
         <label class="field"><span>Description</span><textarea name="description" maxlength="500">${escapeHtml(v.description)}</textarea></label>
         <label class="checkbox-row"><input type="checkbox" name="active" ${v.active ? "checked" : ""}> Live on the shop</label>
 
-        <h4 class="panel-title" style="margin-top:20px">Sizes, colours and stock</h4>
+        <h4 class="panel-title" style="margin-top:20px">Packages, options and capacity</h4>
         <div class="table-wrap"><table id="variant-table">
-          <thead><tr><th>Variant</th><th class="num">Stock</th><th class="num">Own price</th><th>On</th><th></th></tr></thead>
+          <thead><tr><th>Package</th><th class="num">Capacity</th><th class="num">Own price</th><th>On</th><th></th></tr></thead>
           <tbody>
             ${(v.variants || []).map((variant) => `
               <tr data-variant="${variant.id}">
@@ -387,13 +387,13 @@ function openProductModal(product) {
           <label class="field" style="margin:0"><span>New size</span>
             <select class="n-size"><option value="">Choose</option>${SIZES.map((s) => `<option>${s}</option>`).join("")}</select></label>
           <label class="field" style="margin:0"><span>Colour (optional)</span><input class="n-colour" maxlength="30" placeholder="e.g. Black"></label>
-          <label class="field" style="margin:0"><span>Stock</span><input type="number" min="0" class="n-stock" value="0"></label>
-          <button type="button" class="btn small ghost" id="add-variant" style="align-self:end; margin-bottom:0">Add size</button>
+          <label class="field" style="margin:0"><span>Capacity</span><input type="number" min="0" class="n-stock" value="0"></label>
+          <button type="button" class="btn small ghost" id="add-variant" style="align-self:end; margin-bottom:0">Add package</button>
         </div>
 
         <div class="modal-actions">
           <button type="button" class="btn ghost" data-close>Cancel</button>
-          <button type="submit" class="btn">${isNew ? "Add product" : "Save changes"}</button>
+          <button type="submit" class="btn">${isNew ? "Add service" : "Save changes"}</button>
         </div>
       </form>
     </div>`;
@@ -533,8 +533,8 @@ async function renderOrders() {
   const data = await api(`/api/admin/orders?${params.toString()}`);
   const view = document.getElementById("view-orders");
   view.innerHTML = `
-    <h2>Orders</h2>
-    <p class="view-sub">Every order keeps a unique reference. Stock goes down when an order is taken and returns if it is cancelled.</p>
+    <h2>Bookings</h2>
+    <p class="view-sub">Every booking keeps a unique reference. Capacity is reserved when a booking is taken and returns if it is cancelled.</p>
     <div class="toolbar">
       <label class="field" style="margin:0"><span>Status</span>
         <select id="order-filter">
@@ -542,7 +542,7 @@ async function renderOrders() {
           ${Object.keys(STATUS_LABELS).map((key) => `<option value="${key}" ${state.orderFilter === key ? "selected" : ""}>${STATUS_LABELS[key]}</option>`).join("")}
         </select></label>
       <label class="field grow" style="margin:0"><span>Search</span><input type="search" id="order-search" value="${escapeHtml(state.orderSearch)}" placeholder="Reference, customer or phone"></label>
-      <button class="btn" id="new-order">New order</button>
+      <button class="btn" id="new-order">New booking</button>
     </div>
     <div class="table-wrap"><table>
       <thead><tr><th>Reference</th><th>Date</th><th>Customer</th><th class="num">Items</th><th class="num">Total</th><th>Payment</th><th>Status</th></tr></thead>
@@ -583,7 +583,7 @@ async function renderOrderDetail(id) {
     `<button class="btn small ${status === "cancelled" ? "danger" : ""}" data-status="${status}">${label}</button>`
   ).join(" ");
   view.innerHTML = `
-    <button class="back-link" id="back-to-orders">← All orders</button>
+    <button class="back-link" id="back-to-orders">← All bookings</button>
     <div class="detail-head">
       <h2>${escapeHtml(order.reference)}</h2>
       <span class="badge ${escapeHtml(order.status)}">${STATUS_LABELS[order.status] || escapeHtml(order.status)}</span>
@@ -602,7 +602,7 @@ async function renderOrderDetail(id) {
             <tr class="order-total-row"><td>Order total</td><td></td><td></td><td class="num">${money(order.total)}</td></tr>
           </tbody>
         </table></div>
-        <h3 class="panel-title" style="margin-top:20px">Move this order forward</h3>
+        <h3 class="panel-title" style="margin-top:20px">Move this booking forward</h3>
         <p>${actions || `<span class="muted">Nothing left to do for this order.</span>`}</p>
       </div>
       <div class="card">
@@ -640,7 +640,7 @@ async function renderOrderDetail(id) {
   view.querySelectorAll("[data-status]").forEach((button) => {
     button.addEventListener("click", async () => {
       clearFormError(view);
-      if (button.dataset.status === "cancelled" && !window.confirm("Cancel this order? Reserved stock goes back to inventory.")) return;
+      if (button.dataset.status === "cancelled" && !window.confirm("Cancel this booking? Reserved capacity goes back.")) return;
       try {
         await api(`/api/admin/orders/${order.id}/status`, { method: "PATCH", body: JSON.stringify({ status: button.dataset.status }) });
         showToast("Order updated.");
@@ -683,7 +683,7 @@ async function openNewOrderModal() {
   modal.className = "modal-backdrop";
   modal.innerHTML = `
     <div class="modal" style="max-width:720px">
-      <div class="modal-title"><h3>New order</h3><button class="icon-close" type="button" aria-label="Close">×</button></div>
+      <div class="modal-title"><h3>New booking</h3><button class="icon-close" type="button" aria-label="Close">×</button></div>
       <div class="form-error"></div>
       <form id="new-order-form">
         <h4 class="panel-title">Customer</h4>
@@ -699,11 +699,11 @@ async function openNewOrderModal() {
 
         <h4 class="panel-title" style="margin-top:18px">Items</h4>
         <div class="field-row">
-          <label class="field" style="margin:0"><span>Product</span><select class="no-product">
+          <label class="field" style="margin:0"><span>Service</span><select class="no-product">
             <option value="">Choose a product</option>
             ${state.products.filter((p) => p.active).map((p) => `<option value="${p.id}">${escapeHtml(p.name)}${p.base_price === null ? " (price on request)" : ` · $${Number(p.base_price).toFixed(2)}`}</option>`).join("")}
           </select></label>
-          <label class="field" style="margin:0"><span>Size / colour</span><select class="no-variant"><option value="">Choose a product first</option></select></label>
+          <label class="field" style="margin:0"><span>Package / option</span><select class="no-variant"><option value="">Choose a service first</option></select></label>
           <label class="field" style="margin:0"><span>Quantity</span><input type="number" class="no-qty" min="1" value="1" style="width:80px"></label>
           <label class="field" style="margin:0"><span>Unit price</span><input type="number" class="no-price" min="0" step="0.01" placeholder="Auto"></label>
           <button type="button" class="btn small ghost" id="no-add-item" style="align-self:end; margin-bottom:0">Add item</button>
@@ -716,7 +716,7 @@ async function openNewOrderModal() {
         <label class="field" style="margin-top:14px"><span>Notes</span><textarea class="no-notes" maxlength="300" placeholder="Delivery details, agreed changes, anything to remember"></textarea></label>
         <div class="modal-actions">
           <button type="button" class="btn ghost" data-close>Cancel</button>
-          <button type="submit" class="btn">Create order</button>
+          <button type="submit" class="btn">Create booking</button>
         </div>
       </form>
     </div>`;
@@ -733,7 +733,7 @@ async function openNewOrderModal() {
 
   productSelect.addEventListener("change", () => {
     const product = state.products.find((p) => p.id === Number(productSelect.value));
-    variantSelect.innerHTML = `<option value="">Choose a size</option>` + (product ? product.variants
+    variantSelect.innerHTML = `<option value="">Choose a package</option>` + (product ? product.variants
       .filter((variant) => variant.active)
       .map((variant) => `<option value="${variant.id}">${escapeHtml(variantLabel(variant))}</option>`).join("") : "");
     if (product && product.base_price !== null) priceInput.value = Number(product.base_price);

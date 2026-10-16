@@ -1,16 +1,16 @@
 :root {
-  --ink: #1d2925;
-  --forest: #173c32;
-  --forest-light: #285648;
-  --paper: #f5f3eb;
-  --white: #fffefa;
-  --lime: #d4e66d;
-  --coral: #ed7956;
-  --muted: #6a736e;
-  --line: #d8dcd2;
-  --danger: #b3402a;
-  --display: "Barlow Condensed", Impact, sans-serif;
-  --body: "DM Sans", sans-serif;
+  --ink: #242424;
+  --forest: #E91E63;
+  --forest-light: #C2185B;
+  --paper: #faf7f8;
+  --white: #ffffff;
+  --lime: #fce4ec;
+  --coral: #1a1a1a;
+  --muted: #757575;
+  --line: #ece2e6;
+  --danger: #c62828;
+  --display: "Montserrat", Impact, sans-serif;
+  --body: "Montserrat", system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; }
